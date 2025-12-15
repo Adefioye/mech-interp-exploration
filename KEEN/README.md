@@ -3,7 +3,7 @@ This paper attempts to estimate knowledge using hidden states of known entities 
 
 
 # Reference
-
+```
 @misc{gottesman2024estimatingknowledge,
       title={Estimating Knowledge in Large Language Models Without Generating a Single Token},
       author={Daniela Gottesman and Mor Geva},
@@ -13,3 +13,4 @@ This paper attempts to estimate knowledge using hidden states of known entities 
       primaryClass={cs.CL},
       url={https://arxiv.org/abs/2406.12673},
 }
+```
