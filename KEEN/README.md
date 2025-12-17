@@ -1,6 +1,9 @@
 # KEEN Paper
 This paper attempts to estimate knowledge using hidden states of known entities in the wild.
 
+# How to generate dataset for training
+- input-label pair ("Night Train to Lisbon", 0.43)
+
 
 # Reference
 ```
