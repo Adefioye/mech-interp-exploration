@@ -2,7 +2,13 @@
 This paper attempts to estimate knowledge using hidden states of known entities in the wild.
 
 # How to generate dataset for training
-- input-label pair ("Night Train to Lisbon", 0.43)
+[x] Generated completions for per-subject query/questionn using `gpt2-xl`.
+[ ] Generate internal/hidden representations(residual stream vectors at some specific layers)
+[ ] Train a linear/MLP probe on the hidden representations and then evaluate the correlation. What real-valued vectors are we correlating really?
+
+TODO:
+- How to generate hidden representations at some layers for each per-subject query/question
+- Will reuse the linear/MLP probe from paper code.
 
 
 # Reference
