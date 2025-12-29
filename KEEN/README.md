@@ -3,8 +3,10 @@ This paper attempts to estimate knowledge using hidden states of known entities 
 
 # How to generate dataset for training
 [x] Generated completions for per-subject query/questionn using `gpt2-xl`.
-[ ] Generate internal/hidden representations(residual stream vectors at some specific layers)
-[ ] Train a linear/MLP probe on the hidden representations and then evaluate the correlation. What real-valued vectors are we correlating really?
+[ ] Generate gold scores for per-subject question.
+[ ] Generate internal/hidden representations.
+[ ] Train a linear/MLP probe on the hidden representations and then evaluate the correlation. What real-valued vectors are we correlating really? It is the correlation between gold scores and probes' predicted scores for per-subject question.
+[ ] Experiment with features beyond hidden representation. I will try attention outputs and fully-connected activations(Will need to fully understand what these 2 features are).
 
 TODO:
 - How to generate hidden representations at some layers for each per-subject query/question
