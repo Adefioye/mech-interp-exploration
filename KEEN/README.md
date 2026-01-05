@@ -14,13 +14,16 @@ This paper attempts to estimate knowledge using hidden states of known entities 
 - How to extract self-attention outputs using hooks?
 
 # Findings
-- After training probe on residual stream, I was able to achieve a correlation of 0.64 between predicted score and gold QA accuracy albeit with batch size of 1 instead of 32 used in the paper. hyperparaeters used are `lr=1e-5, max_iter=500 and batch_size=1 with sigmoid and cosine scheduling with wd=0.01`.
+- After training probe on residual stream, I was able to achieve a correlation of 0.64 between predicted score and gold QA accuracy albeit with batch size of 1 instead of 32 used in the paper. hyperparameters used are `lr=1e-5, max_iter=500 and batch_size=1 with sigmoid and cosine scheduling with wd=0.01`.
 
 # Questions I need answer to
 - Why is correlation result better with batch_size of 1 instead of 32 when training probe on residual stream
 
 # Paper limitation to be addressed
 
+# My own new spins to be considered
+- [ ] Will filler tokens/prompt repetition enhance feature representations(residual stream, representation in vocab space etc) and ultimately increase correlation between predicted scores and gold scores.
+-
 
 # Reference
 ```
