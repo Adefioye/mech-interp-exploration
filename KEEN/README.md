@@ -8,27 +8,14 @@ This paper attempts to estimate knowledge using hidden states of known entities 
 - [x] Train a linear/MLP probe on the hidden states(residual stream) and then evaluate the correlation.
 - [x] Train probes on attention outputs and fully-connected activations(mlp outputs).
 - [x] Train probe on representation in the vocab space and experiment with top-k values as used in the paper
-
-# TODO:
-- [ ] Show the scatter graph with a `fitted line` between predicted scores and QA accuracy for probes trained on residual stream, VP-50 feature for `gpt2-xl`.
+- [x] Show the scatter graph with a `fitted line` between predicted scores and QA accuracy for probes trained on residual stream, VP-50 feature for `gpt2-xl`.
 What to do?
-   - After training probe on these given features, grab the predicted score using the probe and draw scatter graph with a line for `individual` feature.
-- [ ] Provide example of most influential tokens(based on positive and negative weights) of trained probe VP-50.
-What to do?
-   - For both features, get `top-10` tokens based positive and negative weights of the probe.
-   - Decode the token to reveal their string equivalent.
-- [ ] Show a graph of median rank of tokens for both `high QA` and `low QA` accuracy for VP-50 feature.
-What to do?
-   - Get token ids with positive and negative weights for the trained probe on full logits.
-   - For low accuracy subjects, Get rank for token ids with positive and negative weights and do the median and generate boxplot for all subjects.
-   - For high accuracy subjects, Get rank for token ids with positive and negative weights and do the median and generate boxplot for all subjects.
+- [x] Provide example of most influential tokens(based on positive and negative weights) of trained probe VP-50.
+- [x] Show a graph of median rank of tokens for both `high QA` and `low QA` accuracy for VP-50 feature.
 
 
 # Findings
 - After training probe on residual stream, I was able to achieve a correlation of 0.64 between predicted score and gold QA accuracy albeit with batch size of 1 instead of 32 used in the paper. hyperparameters used are `lr=1e-5, max_iter=500 and batch_size=1 with sigmoid and cosine scheduling with wd=0.01`.
-
-# Questions I need answer to
-- Why is correlation result better with batch_size of 1 instead of 32 when training probe on residual stream
 
 # Paper limitation to be addressed
 
