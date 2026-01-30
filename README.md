@@ -7,7 +7,7 @@ The fundamental goal of this repo is to do mini-project exploration/reproduction
 
 
 # TODOs
-- [ ] Reproduce essential bits of the KEEN paper by training probes on hidden states of entities.
+- [x] Reproduce essential bits of the KEEN paper by training probes on hidden states of entities.
 
 
 # Paper referenced
