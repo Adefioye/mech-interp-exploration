@@ -24,7 +24,7 @@
     - Is it realistic to plot individual neuron activations across inputs?
     - Will performing PCA on hidden activations reveal if neurons have independent features, or is there a better way to reveal this?
     - Are hidden neurons learning redundant features? Are there interesting metrics to help investigate this?
-- [ ] How to measure the structure of backpropated gradients of the features $$G_f$$
+- [ ] How to measure the structure of backpropated gradients of the features $G_f$
 
 
 
