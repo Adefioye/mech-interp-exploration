@@ -2,7 +2,11 @@
 
 ## RQ-1
 ### 1.1 Reproducing Grokking in modular addition
-- [ ] Generating training dynamics plot (training vs test accuracy curves)
+- [ ] Generating training dynamics plot (training vs test accuracy and loss curves)
+    - How best to distinguish stage 1, 2 and 3 using the accuracy and loss curves
+    - Could it be that stage 3 starts around when test accuracy has been saturated
+    - Would it make sense to measure `post-grokking` length(i.e in number of epochs). Maybe defined by number of epochs beyond 99% test accuracy
+
 - [ ] What other metrics(weight or gradient norm) can be used to determine when the network stops memorizing and starts grokking?
 - [ ] What data split(train-test ratio) or regularization is sufficient to achieve both memorization and grokking?
 - [ ] What is the impact of initialization and output layer setup on grokking? 
@@ -19,6 +23,11 @@
         - (or/ and) cosine distance between current weight and initial weight snapshot at beginning of training?
         - (or/ and) ratio of gradient norms between hidden layer and output layer?
         - (or/ and) other metrics used in the paper or some other works.
+- [ ] How to empirically detect transition from stage 2 to 3?
+    - Detect stage 3 via feature evolution after saturation of test loss.
+    - Sustained test accuracy rise is for stage 2.
+    - How best can weights and weights norm help to determine that learning continues after stage 2(test accuracy saturation, correct?).
+    - Could $G_f$ be used to differentiate the 3 stages?
 - [ ] What visualization methods can help determine that network has learnt independent and meaningful features
     - Check the hidden activation or weight vectors to see if each neuron has develop a distinct pattern(e.g fourier basis for modular addition)
     - Is it realistic to plot individual neuron activations across inputs?
@@ -56,15 +65,21 @@
         - Theoretical results show that stage 1 has sharp optimum and stage 2 has flatter optima with at least one zero Hessian eigenvalue. we need to verify this.
         - Conduct pertubation experiments or compute hessians at different training stages.
         - Add small noise to weights when model is memorizing vs generalizing to see which stage's solution is more robust(flat) vs sensitive (sharp)
+        - Could loss landscape be used to distinguish stage 1, 2 and 3?
+    - How best to track redundancy over time? Could effective rank on $F^TF$ be useful here or something else.
 
 ### 1.6 Optimizer effects and initialization ablation
 - [ ] How does initializing the output layer to zero(vs. random initialization) influence feature emergence and grokking timing?
     - Ideally, we compare random vs zero initialization on the output layer and effect on time-to-grokking(i.e number of epichs before test loss starts to improve) and test loss.
 - [ ] Effect of different optimizers on speed to grokking. 
     - How best to compare different optimizers(Adam, SGD and Muon) as they each have different parameters to tweak? 
-    - Check how they impact time-to-grokking and feature diversity in stage 3.
-    - Could feature diversity for different optimizers be checked by computing cosine similarity between neurons weights to check how aligned or diverse they are? How suitable is this approach?
+    - Check how they impact time-to-grokking(stage 2 outset) and post-grokking refinement(stage 3).
+    - How different optimizers affect feature diversity?
+        - using cosine similarity between neurons weights to check how aligned or diverse they are? how useful is this?
+        - using effective rank of $F^TF$
+        - using kernel off-diagonal/diagonal ratio. how useful is this?
     - Using a suitable feature diversity approach, we can verify that there is more diversity in stage 3 compared to previous stages.
+    - How the optimizers affect 
 
 ### 1.7 Deeper networks and attention-based models
 - [ ] How does delayed generalization(grokking) happen in deeper networks(3, 5 and 10-layer network)?
