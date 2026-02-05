@@ -3,7 +3,7 @@
 - Install dependencies `requirements.txt`
 - Navigate to cogo folder to run `modular_addition_simple2.py` script
 ```
-cd ssl/real-dataset/cogo
+cd Li2-framework/yuandong-work/ssl/real-dataset/cogo
 ```
 
 ## Usage
