@@ -1,0 +1,73 @@
+niter: 1000
+seed: 1
+
+L: 6
+M: 24
+
+# dimension of embedding
+d: 8
+H: 2
+
+# dataset:
+#   num_attributes: 2
+#   # if null, then we set num_max_picked_attributes == num_attributes
+#   num_max_picked_attributes: null
+#   num_class_per_attribute: 5
+#   token_dup: 1
+#   perm_mapping: true
+
+dataset2:
+  num_last: 2
+  num_next_per_last: 2
+  num_common: 10
+  num_common_per_last: 5
+  num_unique_per_next: 10
+
+  common_unnormalized_prob: 1
+  unique_unnormalized_min: 0.1
+  unique_unnormalized_max: 1
+
+dataset:
+  num_groups: 5
+  num_facts_per_group: 4
+
+# batchsize
+batchsize: 512
+
+save_per_minibatch: 100
+
+model:
+  nlayer: 1
+
+  use_Wk: true 
+  use_Wq: true 
+  use_Wv: true
+  use_ffn: false
+  use_residue: true
+  use_ln: false
+
+  gate: relu
+
+  universal_Wv: false
+  universal_WkWq: false
+
+  normalize_embed_shift: false
+  normalize_embed_scale: none
+
+  use_random_grad: false
+
+model2:
+  attn_include_base_token: false
+  zero_init: true
+  normalize: true
+  residual: false
+
+
+opt:
+  method: "adam"
+  lr: 0.1
+  lr_y: none,
+  lr_y_multi_on_z: none
+  lr_z: none,
+  momentum: 0.9
+  wd: 0

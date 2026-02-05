@@ -1,0 +1,69 @@
+N: 1000
+batchsize: 128
+T: 0.1
+seed: 1
+
+model:
+  _target_: "bn_gen.Model"
+  multi: null  # if null, then we determine this with beta, the degree of over-parameterization.  
+  # output dimension of second layer (right before contrastive learning)
+  output_d: 20
+  output_nonlinearity: false
+
+  w1_bias: false 
+  activation: relu
+  per_layer_normalize: false
+  shared_low_layer: false
+
+  bn_spec:
+    use_bn: true
+    backprop_mean: true
+    backprop_var: true
+
+# Data distribution: "AA**" means that the pattern is AA at the beginning, followed by other random patterns.
+#distributions = [ "AB***", "*BC**", "**CDE", "A****" ]
+#distributions = [ "A****", "*B***", "**CDE"]
+#distributions = [ "CA***", "*BC**", "C**DA", "C*E**" ]
+#distributions = [ "ABC**", "*ABC*", "**ABC" ]
+#distributions = [ "ABC**", "*ABC*" ]
+distri:
+  specific: null # "CA***-*BC**-C**DA-C*E**"
+  # Number of locations. E.g., for CA***, num_loc = 5
+  num_loc: 10
+  # Number of tokens at each location, e.g., 8 = ABCDEFGH
+  # num_tokens / num_symbols 
+  num_tokens: 8
+  # Number of tokens allowed at each location.  
+  num_tokens_per_pos: 2
+
+  # For pattern [ "CA***", "*BC**", "C**DA", "C*E**" ], we have pattern_cnt = 4, pattern_len = 5
+  pattern_cnt: 10 
+  pattern_len: 5
+
+generator:
+  _target_: "bn_gen.Generator"
+  # How many wildcard needs to be replaced in the augmentation?
+  aug_degree: 5 
+  mag_split: 1
+  # embedding dimension. if null, then it is the same as num_token and all embedding vectors are unit vector.
+  # otherwise we will create non-orthogonal embedding vectors.  
+  d: null
+
+dataset_path: "/checkpoint/yuandong/datasets"
+dataset_use_aug: false
+dataset_use_aug_strength: 0.9
+dataset: null
+
+l2_type: regular
+loss_type: infoNCE
+aug: true
+beta: 1
+
+similarity: dotprod # or negdist
+
+niter: 5000
+
+opt:
+  lr: 0.01
+  momentum: 0.9
+  wd: 5e-3
