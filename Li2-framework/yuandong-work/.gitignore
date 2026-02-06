@@ -4,3 +4,7 @@ __pycache__
 *.pt
 *.pth
 */outputs/*
+
+miniconda.sh
+
+tools2/common_utils/common_utils.egg-info/

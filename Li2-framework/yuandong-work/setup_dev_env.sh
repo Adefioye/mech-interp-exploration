@@ -14,7 +14,7 @@ conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_NAME="${ENV_NAME:-grokking}"            # override: ENV_NAME=new-env-name ./setup_dev_env.sh
 PY_VER="${PY_VER:-3.11}"                    # override: PY_VER=3.10 ./setup_dev_env.sh
-REQ_FILE="${REQ_FILE:-requirements.txt}"
+REQ_FILE="${REQ_FILE:-requirement.txt}"
 TOOLS2_DIR="${TOOLS2_DIR:-$ROOT_DIR/tools2}"
 COMMON_UTILS_DIR="${COMMON_UTILS_DIR:-$TOOLS2_DIR/common_utils}"
 INSTALL_COMMON_UTILS="${INSTALL_COMMON_UTILS:-1}" # set to 0 to skip common_utils install
