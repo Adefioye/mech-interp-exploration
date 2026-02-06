@@ -18,7 +18,6 @@ REQ_FILE="${REQ_FILE:-requirements.txt}"
 TOOLS2_DIR="${TOOLS2_DIR:-$ROOT_DIR/tools2}"
 COMMON_UTILS_DIR="${COMMON_UTILS_DIR:-$TOOLS2_DIR/common_utils}"
 INSTALL_COMMON_UTILS="${INSTALL_COMMON_UTILS:-1}" # set to 0 to skip common_utils install
-WRITE_ENV_SH="${WRITE_ENV_SH:-1}"           # set to 0 to skip writing env.sh
 
 if [ ! -f "$REQ_FILE" ]; then
   echo "❌ requirements file not found: $REQ_FILE"
@@ -49,22 +48,5 @@ if [ "$INSTALL_COMMON_UTILS" = "1" ]; then
   conda run -n "$ENV_NAME" python -m pip install -e "$COMMON_UTILS_DIR"
 fi
 
-if [ "$WRITE_ENV_SH" = "1" ]; then
-  ENV_SH="$PWD/env.sh"
-  cat > "$ENV_SH" <<'EOF'
-#!/usr/bin/env bash
-# Source this file from the yuandong-work folder.
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SSL_DIR="${ROOT_DIR}/ssl"
-REAL_DATASET_DIR="${SSL_DIR}/real-dataset"
-export PYTHONPATH="${SSL_DIR}:${REAL_DATASET_DIR}:${PYTHONPATH:-}"
-EOF
-  chmod +x "$ENV_SH"
-  echo "🧩 Wrote $ENV_SH"
-fi
-
 echo -e "\n✅ Done:"
 echo "   • conda activate $ENV_NAME"
-if [ "$WRITE_ENV_SH" = "1" ]; then
-  echo "   • source $PWD/env.sh"
-fi
