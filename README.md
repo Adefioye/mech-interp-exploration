@@ -8,6 +8,7 @@ The fundamental goal of this repo is to do mini-project exploration/reproduction
 
 # TODOs
 - [x] Reproduce essential bits of the KEEN paper by training probes on hidden states of entities.
+- [ ] Investigating feature emergence in toy neural network and transformer models.
 
 
 # Paper referenced
