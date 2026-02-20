@@ -5,7 +5,7 @@ import os
 import argparse
 from typing import List
 from dotenv import load_dotenv
-from openai import AsyncOpenAI
+from llm_utils.openrouter_client import build_openrouter_client
 
 # ------------------------------
 # Helpers
@@ -37,7 +37,7 @@ def extract_rating(response_text):
         raise ValueError("Could not extract rating from response: " + response_text)
 
 # Global client & semaphore will be set in main(), then used by async fns
-client: AsyncOpenAI = None
+client = None
 semaphore: asyncio.Semaphore = None
 
 # ------------------------------
@@ -165,7 +165,7 @@ async def main():
     parser.add_argument("--input", required=True, help="Path to steered entries JSON (e.g., causal_output_svd.json)")
     parser.add_argument("--concepts", required=True, help="Path to concepts JSON (e.g., input_descriptions.json)")
     parser.add_argument("--output", required=True, help="Where to write the aggregated results JSON")
-    parser.add_argument("--model", default="gpt-4o-mini", help="OpenAI model to use (default: gpt-4o-mini)")
+    parser.add_argument("--model", default="openai/gpt-4o-mini", help="OpenRouter model to use (default: openai/gpt-4o-mini)")
     parser.add_argument("--ranks", required=True, help='K filter, e.g. "100" or "64,100" or "64-128"')
     parser.add_argument("--layers", required=True, help='Layer filter, e.g. "0,8,16" or "0-16"')
     parser.add_argument("--concurrency", type=int, default=50, help="Max concurrent API calls (default: 50)")
@@ -174,8 +174,8 @@ async def main():
         action="store_true",
         help="Enable DiffMean baseline"
         )
-    parser.add_argument("--api-key-var", default="OPENAI_API_KEY",
-                        help="Env var name holding your API key (default: OPENAI_API_KEY)")
+    parser.add_argument("--api-key-var", default="OPENROUTER_API_KEY",
+                        help="Env var name holding your API key (default: OPENROUTER_API_KEY)")
     args = parser.parse_args()
 
     # Load .env and get API key
@@ -189,7 +189,7 @@ async def main():
 
     # Initialize global client + semaphore
     global client, semaphore
-    client = AsyncOpenAI(api_key=api_key)
+    client = build_openrouter_client(api_key=api_key)
     semaphore = asyncio.Semaphore(args.concurrency)
 
     # Read inputs

@@ -1,7 +1,7 @@
 PYTHONPATH=. python experiments/concept_detection/generate_sentences.py \
   --input-json data/gpt2_mlp_features.json \
   --output-json experiments/artifacts/sae_generated_sentences.json \
-  --model gpt-4o-mini \
+  --model openai/gpt-4o-mini \
   --layers 0 \
   --n-per-mode 5 \
   --concurrency 50 \
@@ -9,7 +9,7 @@ PYTHONPATH=. python experiments/concept_detection/generate_sentences.py \
   --retries 3 \
   --jitter-min-ms 50 \
   --jitter-max-ms 300 \
-  --env-var OPENAI_API_KEY
+  --env-var OPENROUTER_API_KEY
 
 
 PYTHONPATH=. python experiments/concept_detection/benchmark_sae.py \

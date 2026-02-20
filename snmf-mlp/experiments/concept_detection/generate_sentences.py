@@ -5,9 +5,9 @@ import os
 import random
 import argparse
 from typing import List
-from openai import AsyncOpenAI
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from dotenv import load_dotenv
+from llm_utils.openrouter_client import build_openrouter_client
 
 # ---------------- Prompts (kept as constants; override in code if needed) ---------------- #
 ACTIVATING_GENERATION_PROMPT = """You are given a description of an LLM concept.
@@ -66,8 +66,8 @@ def build_arg_parser():
                    help="Path to input JSON with concept entries.")
     p.add_argument("--output-json", default="rebuttal/init_methods/svd/generated_sentences_svd.json",
                    help="Path to write generated sentences JSON.")
-    p.add_argument("--model", default="gpt-4o-mini",
-                   help="OpenAI model name.")
+    p.add_argument("--model", default="openai/gpt-4o-mini",
+                   help="OpenRouter model name.")
     # Filtering / counts
     p.add_argument("--layers", default="0,6,12,18,25,31",
                    help="Comma-separated list of layer indices to include (e.g., '0,6,12').")
@@ -87,7 +87,7 @@ def build_arg_parser():
     p.add_argument("--jitter-max-ms", type=int, default=300,
                    help="Maximum sleep jitter (ms) before starting an entry.")
     # API Key/env
-    p.add_argument("--env-var", default="OPENAI_API_KEY",
+    p.add_argument("--env-var", default="OPENROUTER_API_KEY",
                    help="Environment variable name holding the API key.")
     return p
 
@@ -175,7 +175,7 @@ async def process_all_data(
         raise RuntimeError(f"API key not found in environment variable '{env_var}'.")
 
     semaphore = asyncio.Semaphore(concurrency)
-    client = AsyncOpenAI(api_key=api_key)
+    client = build_openrouter_client(api_key=api_key)
 
     generate_one_sentence = make_generate_one_sentence(retries=retries, model=model, max_tokens=max_tokens, semaphore=semaphore)
     generate_sentences = make_generate_sentences(generate_one_sentence)

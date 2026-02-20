@@ -5,10 +5,10 @@ import os
 import argparse
 from typing import List, Tuple
 from dotenv import load_dotenv
-from openai import AsyncOpenAI
+from llm_utils.openrouter_client import build_openrouter_client
 
 # Will be set in main()
-client: AsyncOpenAI = None
+client = None
 semaphore: asyncio.Semaphore = None
 
 
@@ -185,11 +185,11 @@ async def main():
     parser.add_argument("--output", required=True, help="Where to write aggregated results JSON")
     parser.add_argument("--ranks", required=True, help='K filter, e.g. \"100\" or \"64,100\" or \"64-128\"')
     parser.add_argument("--layers", required=True, help='Layer filter, e.g. \"23,31\" or \"0-16\"')
-    parser.add_argument("--model", default="gpt-4o-mini", help="OpenAI model (default: gpt-4o-mini)")
+    parser.add_argument("--model", default="openai/gpt-4o-mini", help="OpenRouter model (default: openai/gpt-4o-mini)")
     parser.add_argument("--concurrency", type=int, default=50, help="Max concurrent API calls (default: 50)")
     parser.add_argument("--attempts", type=int, default=2, help="Retry attempts per scoring call (default: 2)")
     parser.add_argument("--sparsity", default="s0.05", help="Sparsity tag to include in results (default: s0.05)")
-    parser.add_argument("--api-key-var", default="OPENAI_API_KEY", help="Env var containing the API key (default: OPENAI_API_KEY)")
+    parser.add_argument("--api-key-var", default="OPENROUTER_API_KEY", help="Env var containing the API key (default: OPENROUTER_API_KEY)")
     args = parser.parse_args()
 
     # Load .env and fetch key
@@ -203,7 +203,7 @@ async def main():
 
     # Initialize client + concurrency gate
     global client, semaphore
-    client = AsyncOpenAI(api_key=api_key)
+    client = build_openrouter_client(api_key=api_key)
     semaphore = asyncio.Semaphore(args.concurrency)
 
     # Read inputs

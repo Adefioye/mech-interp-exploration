@@ -7,9 +7,9 @@ import argparse
 from typing import List, Optional
 
 from dotenv import load_dotenv
-from openai import AsyncOpenAI
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from experiments.evaluation.json_handler import JsonHandler
+from llm_utils.openrouter_client import build_openrouter_client
 
 # ── utils ─────────────────────────────────────────────────────────────────────
 def parse_int_list(spec: Optional[str]) -> Optional[List[int]]:
@@ -50,15 +50,15 @@ def save_json(path: str, data) -> None:
 # ── core ──────────────────────────────────────────────────────────────────────
 async def run(args):
     # .env
-    load_dotenv()  # discovers OPENAI_API_KEY and optional defaults
+    load_dotenv()  # discovers OPENROUTER_API_KEY and optional defaults
 
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv(args.api_key_var)
     if not api_key:
-        raise RuntimeError("Missing OPENAI_API_KEY in environment (.env).")
+        raise RuntimeError(f"Missing {args.api_key_var} in environment (.env).")
 
     input_json  = args.input  
     output_json = args.output
-    model       = args.model  or 'gpt-4o-mini'
+    model       = args.model  or "openai/gpt-4o-mini"
     top_m       = args.top_m
     concurrency = args.concurrency 
     max_tokens  = args.max_tokens
@@ -67,7 +67,7 @@ async def run(args):
     ranks  = parse_int_list(args.ranks)
 
     # client & semaphore
-    client = AsyncOpenAI(api_key=api_key)
+    client = build_openrouter_client(api_key=api_key)
     semaphore = asyncio.Semaphore(concurrency)
 
     CONNECTION_PROMPT = """
@@ -101,7 +101,7 @@ Make sure you output a very precise and detailed description of the concept that
 """.strip()
 
     @retry(wait=wait_random_exponential(min=1, max=10), stop=stop_after_attempt(5))
-    async def _call_openai(messages: list[dict]):
+    async def _call_model(messages: list[dict]):
         async with semaphore:
             return await client.chat.completions.create(
                 model=model,
@@ -120,7 +120,7 @@ Make sure you output a very precise and detailed description of the concept that
         prompt = CONNECTION_PROMPT.format(token_context_str=token_context_str)
         print(f"[→] Generating for K={entry.get('K', 'SAE')} layer={entry['layer']} row={entry['h_row']}…", flush=True)
 
-        resp = await _call_openai([{"role": "user", "content": prompt}])
+        resp = await _call_model([{"role": "user", "content": prompt}])
         content = resp.choices[0].message.content
         result  = extract_results_section(content) or "ERROR: no Results section"
         print(f"[✔] Done K={entry.get('K', 'SAE')} layer={entry['layer']}", flush=True)
@@ -166,11 +166,12 @@ Make sure you output a very precise and detailed description of the concept that
 
 # ── entrypoint ────────────────────────────────────────────────────────────────
 def build_argparser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Generate concept descriptions from token-score pairs using OpenAI.")
+    p = argparse.ArgumentParser(description="Generate concept descriptions from token-score pairs using OpenRouter.")
     # IO & model
     p.add_argument("--input", "-i", type=str, help="Path to input JSON (overrides INPUT_JSON env).")
     p.add_argument("--output", "-o", type=str, help="Path to output JSON (overrides OUTPUT_JSON env).")
     p.add_argument("--model", "-m", type=str, help="Model name (overrides MODEL env).")
+    p.add_argument("--api-key-var", type=str, default="OPENROUTER_API_KEY", help="Env var containing OpenRouter API key.")
     # Selection / behavior
     p.add_argument("--layers", type=str, help="Layers filter like '23,31' or '0-3,6'. Default env/23,31.")
     p.add_argument("--ranks",  type=str, help="Ranks (K) filter like '50,100' or '50-200'. If omitted, no K filter.")

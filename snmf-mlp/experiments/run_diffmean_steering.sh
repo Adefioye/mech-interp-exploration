@@ -38,7 +38,7 @@ PYTHONPATH=. python experiments/causal/vocab_proj_diffmean.py \
 PYTHONPATH=. python experiments/snmf_interp/generate_output_centric_descriptions.py\
   --input experiments/artifacts/diffmean_vocab_proj.json \
   --output experiments/artifacts/diffmean_output_descriptions.json \
-  --model gpt-4o-mini \
+  --model openai/gpt-4o-mini \
   --layers 0 \
   --ranks 50 \
   --top-m 25 \
@@ -51,7 +51,7 @@ PYTHONPATH=. python experiments/causal/output_score_llm_judge.py \
   --output experiments/artifacts/diffmean_results_causal_out.json \
   --layers 0 \
   --ranks 50 \
-  --model gpt-4o-mini \
+  --model openai/gpt-4o-mini \
   --concurrency 50 \
   --attempts 2 \
   --sparsity 0.01
@@ -60,7 +60,7 @@ PYTHONPATH=. python experiments/causal/input_score_llm_judge.py \
   --input experiments/artifacts/diffmean_causal_output.json \
   --concepts experiments/artifacts/input_descriptions.json \
   --output experiments/artifacts/diffmean_causal_results_in.json \
-  --model gpt-4o-mini \
+  --model openai/gpt-4o-mini \
   --ranks 50 \
   --layers 0 \
   --concurrency 50 \

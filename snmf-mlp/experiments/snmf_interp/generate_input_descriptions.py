@@ -4,10 +4,10 @@ import os
 import re
 import argparse
 from typing import List, Any
-from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletion
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from dotenv import load_dotenv
+from llm_utils.openrouter_client import build_openrouter_client
 
 # ---------------- Prompts ---------------- #
 CONCEPT_PROMPT = """
@@ -79,9 +79,9 @@ def build_arg_parser():
                    help="Path to input JSON containing top_activations per (K, layer, h_row).")
     p.add_argument("--output-json", default="rebuttal/init_methods/svd/input_descriptions.json",
                    help="Path to write the output descriptions JSON.")
-    # OpenAI
-    p.add_argument("--model", default="gpt-4o-mini", help="OpenAI model name.")
-    p.add_argument("--env-var", default="OPENAI_API_KEY",
+    # OpenRouter
+    p.add_argument("--model", default="openai/gpt-4o-mini", help="OpenRouter model name.")
+    p.add_argument("--env-var", default="OPENROUTER_API_KEY",
                    help="Environment variable holding the API key (loaded via python-dotenv if present).")
     # Filtering / selection
     p.add_argument("--layers", default="0,6,12,18,25,31",
@@ -98,7 +98,7 @@ def build_arg_parser():
 # ---------------- Async workers ---------------- #
 def make_generate_concept(retries: int, model: str, max_tokens: int, semaphore: asyncio.Semaphore):
     @retry(wait=wait_random_exponential(min=1, max=10), stop=stop_after_attempt(retries))
-    async def _inner(client: AsyncOpenAI, entry, top_m: int):
+    async def _inner(client, entry, top_m: int):
         # sort and pick top-M by activation
         top = sorted(
             entry["top_activations"],
@@ -121,7 +121,7 @@ def make_generate_concept(retries: int, model: str, max_tokens: int, semaphore: 
     return _inner
 
 def make_process_entry(generate_concept):
-    async def _inner(client: AsyncOpenAI, entry, top_m: int):
+    async def _inner(client, entry, top_m: int):
         concept_desc = await generate_concept(client, entry, top_m)
         print(".", end="", flush=True)
         return {
@@ -145,7 +145,7 @@ async def run(args):
         raise RuntimeError(f"API key not found in environment variable '{args.env_var}'.")
 
     semaphore = asyncio.Semaphore(args.concurrency)
-    client = AsyncOpenAI(api_key=api_key)
+    client = build_openrouter_client(api_key=api_key)
 
     generate_concept = make_generate_concept(
         retries=args.retries, model=args.model, max_tokens=args.max_tokens, semaphore=semaphore

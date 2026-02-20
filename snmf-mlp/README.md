@@ -27,13 +27,13 @@ pip install -r requirements.txt
 
 To run experiments, configure the following in a `.env` file:
 
-* `OPENAI_API_KEY`: a functioning API key for OpenAI (used for evaluation)
+* `OPENROUTER_API_KEY`: a functioning API key for OpenRouter (used for LLM-based generation/evaluation)
 * `GOOGLE_API_KEY`: a functioning API key for Gemini (used for DiffMean sentence generation)
 
 **Example:**
 
 ```bash
-OPENAI_API_KEY=sk-....
+OPENROUTER_API_KEY=sk-or-v1-....
 GOOGLE_API_KEY=ABC....
 ```
 
