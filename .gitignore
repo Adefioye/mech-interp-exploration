@@ -1,1 +1,4 @@
 snmf.pdf
+__pycache__/
+artifacts/
+training_summary.log

@@ -56,6 +56,9 @@ def generate_token_contexts(tokens, sample_ids, act_generator, context_window: i
     return token_ds
 
 def get_top_activating_indices(G_np: np.ndarray, concept_idx: int, num_samples: int = 10):
+    """
+    Note: G_np is equivalent to Y in the paper
+    """
     activations, non_zero_indices = [], []
     col = G_np[:, concept_idx]
     top_idx = np.argsort(col)[-num_samples:]
@@ -139,10 +142,14 @@ def main():
                 nmf: NMFSemiNMF = pickle.load(f)
 
             G_np = nmf.G_.detach().cpu().numpy() if isinstance(nmf.G_, torch.Tensor) else nmf.G_
+            log(f"Shape of Y: {G_np.shape}")
+            
             for concept_idx in range(rank):
                 top_idx, top_acts = get_top_activating_indices(
                     G_np, concept_idx=concept_idx, num_samples=args.num_samples_per_factor
                 )
+
+                # It's important to note here that num_samples = num_tokens in the entire dataset
                 formatted = [
                     {"token": token_context[i][0], "activation": a, "context": token_context[i][1]}
                     for i, a in zip(top_idx, top_acts)
