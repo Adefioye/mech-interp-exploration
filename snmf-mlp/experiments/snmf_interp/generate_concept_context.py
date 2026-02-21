@@ -80,7 +80,7 @@ def main():
 
     # Data / model generation
     p.add_argument("--model-name", type=str, default="meta-llama/Llama-3.1-8B")
-    p.add_argument("--factor-mode", type=str, choices=["mlp","attn","resid"], default="mlp")
+    p.add_argument("--factor-mode", type=str, choices=["mlp","attn","residual"], default="mlp")
     p.add_argument("--data-path", type=str, default="data/final_dataset_20_concepts.json")
 
     # Selection

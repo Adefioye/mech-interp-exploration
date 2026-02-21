@@ -138,7 +138,8 @@ class ConceptEvaluator:
 
         activations = model_cache[hook_name].to(concept_tensor.device)
         
-        metrics = ['r2', 'cosine', 'corr', 'mse']
+        # metrics = ['r2', 'cosine', 'corr', 'mse']
+        metrics = ['cosine']
         scores = {m: [] for m in metrics}
 
         # Iterate over the batch

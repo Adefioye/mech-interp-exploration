@@ -63,6 +63,18 @@ def main():
     device = get_device(args.device)
     print(f"Device: {device}")
 
+    mode_to_hook = {
+        "mlp": "blocks.{layer_number}.mlp.hook_post",
+        "residual": "blocks.{layer_number}.hook_resid_post",
+        "mlp_out": "blocks.{layer_number}.hook_mlp_out",
+    }
+    if args.mode not in mode_to_hook:
+        raise ValueError(
+            f"Unsupported --mode '{args.mode}'. "
+            f"Expected one of: {', '.join(mode_to_hook.keys())}"
+        )
+    hook_template = mode_to_hook[args.mode]
+
     # Validate inputs
     if not os.path.isfile(args.concept_data):
         raise FileNotFoundError(f"--concept-data not found: {args.concept_data}")
@@ -72,11 +84,11 @@ def main():
 
     # Load model and evaluator
     model = HookedTransformer.from_pretrained(args.model_name, device=device)
-    evaluator = ConceptEvaluator(model)
+    evaluator = ConceptEvaluator(model, hook_template=hook_template)
 
     # JSON handler setup
     json_handler = JsonHandler(
-        ["K", "concept", "scores", "random_scores", "layer", "h_row", "sparsity"],
+        ["mode", "K", "concept", "scores", "random_scores", "layer", "h_row", "sparsity"],
         args.save_path,
         auto_write=False
     )
@@ -126,6 +138,7 @@ def main():
             random_scores = evaluator.evaluate_tensor(neutral_sentences, layer, concept_vec)
 
             json_handler.add_row(
+                mode=args.mode,
                 K=K,
                 concept=concept,
                 scores=scores,
