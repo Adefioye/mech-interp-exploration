@@ -184,7 +184,7 @@ async def process_all_data(
     tasks = [
         process_entry(client, entry, n_per_mode)
         for entry in data
-        if (entry.get('K', True) or int(entry['K']) in k_values) and (int(entry['layer']) in layers)
+        if entry.get('K', False) and int(entry['K']) in k_values and entry.get('layer', False) and (int(entry['layer']) in layers)
     ]
     total_tasks = len(tasks)
     print(f"Processing {total_tasks} items concurrently... (model={model}, n_per_mode={n_per_mode}, max_tokens={max_tokens})")
