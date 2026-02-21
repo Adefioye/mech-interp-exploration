@@ -142,7 +142,6 @@ def main():
                 nmf: NMFSemiNMF = pickle.load(f)
 
             G_np = nmf.G_.detach().cpu().numpy() if isinstance(nmf.G_, torch.Tensor) else nmf.G_
-            log(f"Shape of Y: {G_np.shape}")
             
             for concept_idx in range(rank):
                 top_idx, top_acts = get_top_activating_indices(

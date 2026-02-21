@@ -2,3 +2,9 @@ snmf.pdf
 __pycache__/
 artifacts/
 training_summary.log
+.DS_Store
+**/.DS_Store
+
+
+# Secret file
+.env
