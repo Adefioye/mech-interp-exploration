@@ -93,7 +93,7 @@ The summary also prints a suggested command for final test evaluation with `eval
 Default dataset path:
 
 ```text
-data/final_dataset_20_concepts.json
+data/concept_train.json
 ```
 
 You can point to another dataset with:

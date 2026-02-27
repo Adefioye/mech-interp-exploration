@@ -1,5 +1,5 @@
-dataset_path: data/final_dataset_20_concepts.json
-dataset_url: null
+dataset_path: data/concept_train.json
+dataset_url: https://huggingface.co/datasets/dhgottesman/sae_concept/resolve/main/concept_train.json
 activation_cache_dir: experiments/vanilla_sae/cache
 activation_batch_size: 5
 force_regenerate_activations: false
