@@ -8,3 +8,10 @@ training_summary.log
 
 # Secret file
 .env
+
+# vanilla_sae data and generated artifacts
+snmf-mlp/data/concept_train.json
+snmf-mlp/experiments/vanilla_sae/cache/
+snmf-mlp/experiments/vanilla_sae/outputs/
+snmf-mlp/experiments/vanilla_sae/multirun/
+snmf-mlp/wandb/
