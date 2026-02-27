@@ -88,7 +88,7 @@ def main():
 
     # JSON handler setup
     json_handler = JsonHandler(
-        ["mode", "K", "concept", "scores", "random_scores", "layer", "h_row", "sparsity"],
+        ["mode", "K", "top_m", "concept", "scores", "random_scores", "layer", "h_row", "sparsity"],
         args.save_path,
         auto_write=False
     )
@@ -140,6 +140,7 @@ def main():
             json_handler.add_row(
                 mode=args.mode,
                 K=K,
+                top_m=entry.get("top_m", -1),
                 concept=concept,
                 scores=scores,
                 random_scores=random_scores,

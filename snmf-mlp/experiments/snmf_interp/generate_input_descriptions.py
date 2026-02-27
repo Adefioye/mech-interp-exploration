@@ -89,11 +89,13 @@ def build_arg_parser():
     p.add_argument("--k-values", default="100",
                    help="Comma-separated list of K (rank) values to include.")
     # Generation controls
-    p.add_argument("--top-m", type=int, default=10, help="Number of top activations to consider.")
+    p.add_argument("--top-m", default="10",
+                   help="Comma-separated list of top-m values to iterate (e.g., '5,10,20').")
     p.add_argument("--max-tokens", type=int, default=200, help="max_tokens for each completion.")
     p.add_argument("--concurrency", type=int, default=50, help="Semaphore limit for concurrent calls.")
     p.add_argument("--retries", type=int, default=5, help="Tenacity stop_after_attempt.")
     return p
+
 
 # ---------------- Async workers ---------------- #
 def make_generate_concept(retries: int, model: str, max_tokens: int, semaphore: asyncio.Semaphore):
@@ -128,6 +130,7 @@ def make_process_entry(generate_concept):
             "K": entry["K"],
             "layer": entry["layer"],
             "h_row": entry["h_row"],
+            "top_m": top_m,
             "description": concept_desc,
         }
     return _inner
@@ -137,6 +140,10 @@ async def run(args):
     data = load_data(args.input_json)
     layers = set(_parse_int_list(args.layers))
     k_values = set(_parse_int_list(args.k_values))
+    top_m_values = _parse_int_list(args.top_m)
+    
+    if not top_m_values:
+        raise ValueError(f"No valid top-m values found in --top-m='{args.top_m}'.")
 
     # Load API key
     load_dotenv()
@@ -153,12 +160,13 @@ async def run(args):
     process_entry = make_process_entry(generate_concept)
 
     tasks = [
-        process_entry(client, e, args.top_m)
+        process_entry(client, e, top_m)
+        for top_m in top_m_values
         for e in data
         if (int(e["layer"]) in layers) and (int(e["K"]) in k_values)
     ]
 
-    print(f"Running over {len(tasks)} tasks …")
+    print(f"Running over {len(tasks)} tasks … (top_m_values={top_m_values})")
     results = []
     for coro in asyncio.as_completed(tasks):
         results.append(await coro)

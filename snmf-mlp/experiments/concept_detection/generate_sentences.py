@@ -144,6 +144,7 @@ def make_process_entry(generate_sentences, jitter_min_ms: int, jitter_max_ms: in
             "K": entry.get('K', 'SAE'),
             "h_row": entry.get('h_row', entry.get('index', None)),
             "layer": entry['layer'],
+            "top_m": entry.get("top_m", -1),
             "activating_sentences": activating_sentences,
             "neutral_sentences": neutral_sentences,
             "concept": entry['description'],
