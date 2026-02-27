@@ -1,6 +1,7 @@
 import math
 import time
-from typing import Tuple
+from pathlib import Path
+from typing import Any, Dict, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -11,22 +12,7 @@ from tqdm import tqdm
 
 class SAE(nn.Module):
     """
-    Sparse Autoencoder
-
-    Encoder:  a = W_e (x - b_d) + b_e
-    Decoder:  x̂ = W_d^T a + b_d
-
-    Forward returns:
-        recon, activations   # shapes: (batch_size, input_dim), (batch_size, hidden_dim)
-
-    Args
-    ----
-    input_dim : int
-        input dimensionality
-    hidden_dim : int
-        number of dictionary atoms (latent units)
-    eps : float
-        Numerical stability for normalization.
+    Sparse autoencoder with an L1 penalty on hidden activations.
     """
 
     def __init__(
@@ -37,22 +23,15 @@ class SAE(nn.Module):
         eps: float = 1e-8,
     ) -> None:
         super().__init__()
-        self.l1_lambda = l1_lambda
+        self.l1_lambda = float(l1_lambda)
         self.eps = float(eps)
 
-        # Initialize necessary weights and biases
-        # self.encoder: Project from input dimension to hidden dimension
-        # self.decoder: Project from hidden dimension, k to input dimension, d
-
-        # Encoder (# Implement me!)
         self.encoder = nn.Linear(input_dim, hidden_dim, bias=True)
-        # Decoder (# Implement me!)
         self.decoder = nn.Linear(hidden_dim, input_dim, bias=True)
 
         self.init_parameters()
 
     def init_parameters(self) -> None:
-        # Kaiming init for encoder (good with ReLU), xavier for decoder.
         nn.init.kaiming_uniform_(self.encoder.weight, a=math.sqrt(5))
         fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.encoder.weight)
         bound = 1 / math.sqrt(fan_in)
@@ -64,116 +43,201 @@ class SAE(nn.Module):
         nn.init.uniform_(self.decoder.bias, -bound, bound)
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
-        """Return activations a (after ReLU nonlinearity), shape (B, H)."""
         b_d = self.decoder.bias
-        output = self.encoder(x - b_d) # We didn't add b_e as it is already inside of self.encoder
-        return F.relu(output)
+        return F.relu(self.encoder(x - b_d))
 
-    def decode(self, a: torch.Tensor) -> torch.Tensor:
-        """Decode activations to reconstruction, shape (B, D)."""
-        # Normalize decoder weights before decoding
-        W = self._normalize_columns(self.decoder.weight) # (D, H)
-        output = a @ W.T + self.decoder.bias # (B, H) @ (H, D) -> (B, D)
-        return output
+    def decode(self, activations: torch.Tensor) -> torch.Tensor:
+        decoder_weight = self._normalize_columns(self.decoder.weight)
+        return activations @ decoder_weight.T + self.decoder.bias
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        """
-        Args:
-          x: (batch_size, input_dim)
-        Returns: (recon, a)
-            recon: the reconstructed activations `x_hat` (batch_size, input_dim)
-            a: the encoder feature activations `a` (batch_size, hidden_dim)
-        """
-        # Implement me!
-        a = self.encode(x)
-        recon = self.decode(a)
-        return (recon, a)
+        activations = self.encode(x)
+        reconstruction = self.decode(activations)
+        return reconstruction, activations
 
-    def _normalize_columns(self, W: torch.Tensor) -> torch.Tensor:
-        # W: (D, H) where each column is an atom; normalize each column
-        norms = torch.linalg.norm(W, dim=0, keepdim=True).clamp_min(self.eps)
-        return W / norms
+    def _normalize_columns(self, weights: torch.Tensor) -> torch.Tensor:
+        norms = torch.linalg.norm(weights, dim=0, keepdim=True).clamp_min(self.eps)
+        return weights / norms
 
-    def fit(self, train_loader, val_loader, epochs: int = 1, lr: float = 1e-3, device=None):
-        self.train()
+    @staticmethod
+    def _unwrap_batch(batch: Any) -> torch.Tensor:
+        return batch[0] if isinstance(batch, (list, tuple)) else batch
+
+    def _compute_losses(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
+        reconstruction, activations = self(x)
+        recon_loss = F.mse_loss(reconstruction, x, reduction="mean")
+        l1_loss = activations.abs().mean()
+        total_loss = recon_loss + self.l1_lambda * l1_loss
+        return {
+            "recon_loss": recon_loss,
+            "l1_loss": l1_loss,
+            "total_loss": total_loss,
+        }
+
+    def evaluate(self, data_loader, device: Optional[torch.device] = None) -> Dict[str, float]:
+        device = device or next(self.parameters()).device
+        self.eval()
+
+        total_recon = 0.0
+        total_l1 = 0.0
+        total_loss = 0.0
+        total_samples = 0
+
+        with torch.no_grad():
+            for batch in data_loader:
+                x = self._unwrap_batch(batch).to(device)
+                losses = self._compute_losses(x)
+                batch_size = x.size(0)
+
+                total_recon += losses["recon_loss"].item() * batch_size
+                total_l1 += losses["l1_loss"].item() * batch_size
+                total_loss += losses["total_loss"].item() * batch_size
+                total_samples += batch_size
+
+        divisor = max(1, total_samples)
+        return {
+            "recon_loss": total_recon / divisor,
+            "l1_loss": total_l1 / divisor,
+            "total_loss": total_loss / divisor,
+            "samples": total_samples,
+        }
+
+    def fit(
+        self,
+        train_loader,
+        val_loader,
+        epochs: int = 1,
+        lr: float = 1e-3,
+        device: Optional[torch.device] = None,
+        patience: Optional[int] = None,
+        checkpoint_path: Optional[str] = None,
+        use_wandb: bool = True,
+        wandb_project: str = "vanilla-sae",
+        wandb_entity: Optional[str] = None,
+        wandb_run_name: Optional[str] = None,
+        wandb_config: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        if val_loader is None:
+            raise ValueError("val_loader must be provided for model selection.")
+
         device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.to(device)
-        opt = torch.optim.Adam(self.parameters(), lr=lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
 
-        run = wandb.init(project="my-sae", name=f"{lr}-{epochs}-{l1_lambda}-{hidden_dim}", config={
-            "lr": lr,
-            "epochs": epochs,
-            "l1_lambda": self.l1_lambda,
-            "model": "SAE",
-            "input_dim": self.encoder.in_features,
-            "hidden_dim": self.encoder.out_features,
-        })
-        wandb.watch(self, log="gradients", log_freq=100)
+        checkpoint_target = Path(checkpoint_path) if checkpoint_path else None
+        if checkpoint_target is not None:
+            checkpoint_target.parent.mkdir(parents=True, exist_ok=True)
 
-        for epoch in range(epochs):
-            
+        wandb_run = None
+        if use_wandb:
+            wandb_run = wandb.init(
+                project=wandb_project,
+                entity=wandb_entity,
+                name=wandb_run_name,
+                config=wandb_config,
+            )
+            wandb.watch(self, log="gradients", log_freq=100)
+
+        best_val_recon = float("inf")
+        best_epoch = 0
+        epochs_without_improvement = 0
+        best_state_dict = None
+        history = []
+
+        for epoch in range(1, epochs + 1):
             self.train()
-
             epoch_start = time.time()
-            train_loss, train_n = 0.0, 0
-            print(f"[fit] Epoch {epoch+1}/{epochs} started.")
+            train_recon = 0.0
+            train_l1 = 0.0
+            train_total = 0.0
+            train_samples = 0
 
-            ##### Train Loss #####
-            for batch_idx, batch in tqdm(enumerate(train_loader)):
-                x = batch[0] if isinstance(batch, (list, tuple)) else batch
-                x = x.to(device)
+            progress = tqdm(
+                train_loader,
+                desc=f"Epoch {epoch}/{epochs}",
+                leave=False,
+            )
+            for batch in progress:
+                x = self._unwrap_batch(batch).to(device)
+                optimizer.zero_grad()
 
-                opt.zero_grad()
+                losses = self._compute_losses(x)
+                losses["total_loss"].backward()
+                optimizer.step()
 
-                # Implement the training loop!
-                # 1. Make a the forward pass to compute the `recon` and activations `a`.
-                # 2. Compute the MSE loss between `recon` and `x`.
-                # 3. Compute the L1 loss on the activations `a`.
-                # 4. Compute the total `loss`.
-                recon, act = self(x)
-                recon_loss = F.mse_loss(recon, x, reduction="mean")
-                l1 = act.abs().mean()
-                loss = recon_loss + self.l1_lambda * l1
+                batch_size = x.size(0)
+                train_recon += losses["recon_loss"].item() * batch_size
+                train_l1 += losses["l1_loss"].item() * batch_size
+                train_total += losses["total_loss"].item() * batch_size
+                train_samples += batch_size
 
-                loss.backward()
-                opt.step()
+            train_divisor = max(1, train_samples)
+            train_metrics = {
+                "recon_loss": train_recon / train_divisor,
+                "l1_loss": train_l1 / train_divisor,
+                "total_loss": train_total / train_divisor,
+                "samples": train_samples,
+            }
+            val_metrics = self.evaluate(val_loader, device=device)
+            epoch_duration = time.time() - epoch_start
 
-                train_loss += loss.item() * x.size(0)
-                train_n += x.size(0)
+            is_best = val_metrics["recon_loss"] < best_val_recon
+            if is_best:
+                best_val_recon = val_metrics["recon_loss"]
+                best_epoch = epoch
+                epochs_without_improvement = 0
+                best_state_dict = {
+                    name: tensor.detach().cpu().clone()
+                    for name, tensor in self.state_dict().items()
+                }
+                if checkpoint_target is not None:
+                    torch.save(best_state_dict, checkpoint_target)
+            else:
+                epochs_without_improvement += 1
 
-            train_epoch_loss = train_loss / max(1, train_n)
-            dur = time.time() - epoch_start
-            ############################
+            epoch_metrics = {
+                "epoch": epoch,
+                "train/recon_loss": train_metrics["recon_loss"],
+                "train/l1_loss": train_metrics["l1_loss"],
+                "train/total_loss": train_metrics["total_loss"],
+                "val/recon_loss": val_metrics["recon_loss"],
+                "val/l1_loss": val_metrics["l1_loss"],
+                "val/total_loss": val_metrics["total_loss"],
+                "time/epoch_sec": epoch_duration,
+            }
+            history.append(epoch_metrics)
 
-            ##### Validation Loss #####
-            self.eval()
-            val_loss, val_n = 0.0, 0
-            for batch in val_loader:
-                x = batch[0] if isinstance(batch, (tuple, list)) else batch
-                x = x.to(device)
+            if wandb_run is not None:
+                wandb.log(epoch_metrics, step=epoch)
 
-                recon, act = self(x)
+            print(
+                f"[fit] epoch={epoch}/{epochs} "
+                f"train_total={train_metrics['total_loss']:.6f} "
+                f"val_recon={val_metrics['recon_loss']:.6f} "
+                f"best_val_recon={best_val_recon:.6f} "
+                f"time={epoch_duration:.2f}s",
+                flush=True,
+            )
 
-                loss = F.mse_loss(recon, x, reduction="mean")
+            if patience is not None and epochs_without_improvement >= patience:
+                print(
+                    f"[fit] early stopping triggered after {epoch} epochs "
+                    f"(patience={patience}).",
+                    flush=True,
+                )
+                break
 
-                val_loss += loss.item() * x.size(0)
-                val_n += x.size(0)
+        if best_state_dict is not None:
+            self.load_state_dict(best_state_dict)
 
-            val_loss = val_loss / max(val_n, 1)
-            ############################
+        if wandb_run is not None:
+            wandb_run.summary["best_epoch"] = best_epoch
+            wandb_run.summary["best_val_recon_loss"] = best_val_recon
+            wandb_run.finish()
 
-            # history.append((train_epoch_loss, val_loss))
-
-            print(f"[fit] Epoch {epoch+1}/{epochs} completed. "
-                f"AvgTrainLoss={train_epoch_loss:.6f} | TrainSamples={train_n} | AvgValLoss={val_loss:.6f} | ValSamples={val_n} | Time={dur:.2f}s")
-
-
-            wandb.log({
-                "train/epoch_loss": train_epoch_loss,
-                "val/epoch_loss": val_loss,
-                "train/epoch": epoch + 1,
-                "train/samples": n,
-                "time/epoch_sec": dur,
-            }, step=epoch + 1)
-
-        run.finish()
+        return {
+            "best_epoch": best_epoch,
+            "best_val_recon_loss": best_val_recon,
+            "checkpoint_path": str(checkpoint_target) if checkpoint_target else None,
+            "history": history,
+        }

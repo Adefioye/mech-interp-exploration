@@ -1,0 +1,3 @@
+use_wandb: false
+wandb_project: vanilla-sae
+wandb_entity: null

@@ -1,0 +1,8 @@
+dataset_path: data/final_dataset_20_concepts.json
+dataset_url: null
+activation_cache_dir: experiments/vanilla_sae/cache
+activation_batch_size: 5
+force_regenerate_activations: false
+train_ratio: 0.8
+val_ratio: 0.1
+test_ratio: 0.1
