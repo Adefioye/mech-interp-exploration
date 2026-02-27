@@ -1,0 +1,257 @@
+{
+  "best_run": {
+    "best_epoch": 10,
+    "best_val_recon_loss": 0.22549217718200942,
+    "config_path": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24/74/resolved_config.yaml",
+    "hyperparameters": {
+      "hidden_dim": 4096,
+      "l1_lambda": 0.001,
+      "lr": 0.0003
+    },
+    "metrics_path": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24/74/metrics.json",
+    "override_string": "train.lr=0.0003 sae.hidden_dim=4096 sae.l1_lambda=0.001",
+    "resolved_config": {
+      "data": {
+        "activation_batch_size": 5,
+        "activation_cache_dir": "experiments/vanilla_sae/cache",
+        "dataset_path": "data/concept_train.json",
+        "dataset_url": "https://huggingface.co/datasets/dhgottesman/sae_concept/resolve/main/concept_train.json",
+        "force_regenerate_activations": false,
+        "test_ratio": 0.1,
+        "train_ratio": 0.8,
+        "val_ratio": 0.1
+      },
+      "evaluation": {
+        "run_test": false,
+        "selection_metric": "val/recon_loss"
+      },
+      "factorization_mode": "residual",
+      "layer": 30,
+      "logging": {
+        "use_wandb": false,
+        "wandb_entity": null,
+        "wandb_project": "vanilla-sae"
+      },
+      "model_name": "gpt2-large",
+      "sae": {
+        "eps": 1e-08,
+        "hidden_dim": 4096,
+        "l1_lambda": 0.001
+      },
+      "seed": 42,
+      "train": {
+        "batch_size": 256,
+        "data_device": "auto",
+        "device": "auto",
+        "epochs": 10,
+        "lr": 0.0003,
+        "model_device": "auto",
+        "num_workers": "auto",
+        "num_workers_cap": 4,
+        "patience": 2,
+        "save_best_checkpoint": true
+      }
+    },
+    "run_dir": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24/74",
+    "suggested_test_command": "PYTHONPATH=. python experiments/vanilla_sae/train.py train.lr=0.0003 sae.hidden_dim=4096 sae.l1_lambda=0.001 evaluation.run_test=true",
+    "test_metrics": null,
+    "val_metrics": {
+      "l1_loss": 3.824157980074263,
+      "recon_loss": 0.22549217718200942,
+      "samples": 2641,
+      "total_loss": 0.22931633296675502
+    }
+  },
+  "multirun_dir": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24",
+  "num_runs": 125,
+  "selection_metric": "val/recon_loss",
+  "top_k": 3,
+  "top_runs": [
+    {
+      "best_epoch": 10,
+      "best_val_recon_loss": 0.22549217718200942,
+      "config_path": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24/74/resolved_config.yaml",
+      "hyperparameters": {
+        "hidden_dim": 4096,
+        "l1_lambda": 0.001,
+        "lr": 0.0003
+      },
+      "metrics_path": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24/74/metrics.json",
+      "override_string": "train.lr=0.0003 sae.hidden_dim=4096 sae.l1_lambda=0.001",
+      "resolved_config": {
+        "data": {
+          "activation_batch_size": 5,
+          "activation_cache_dir": "experiments/vanilla_sae/cache",
+          "dataset_path": "data/concept_train.json",
+          "dataset_url": "https://huggingface.co/datasets/dhgottesman/sae_concept/resolve/main/concept_train.json",
+          "force_regenerate_activations": false,
+          "test_ratio": 0.1,
+          "train_ratio": 0.8,
+          "val_ratio": 0.1
+        },
+        "evaluation": {
+          "run_test": false,
+          "selection_metric": "val/recon_loss"
+        },
+        "factorization_mode": "residual",
+        "layer": 30,
+        "logging": {
+          "use_wandb": false,
+          "wandb_entity": null,
+          "wandb_project": "vanilla-sae"
+        },
+        "model_name": "gpt2-large",
+        "sae": {
+          "eps": 1e-08,
+          "hidden_dim": 4096,
+          "l1_lambda": 0.001
+        },
+        "seed": 42,
+        "train": {
+          "batch_size": 256,
+          "data_device": "auto",
+          "device": "auto",
+          "epochs": 10,
+          "lr": 0.0003,
+          "model_device": "auto",
+          "num_workers": "auto",
+          "num_workers_cap": 4,
+          "patience": 2,
+          "save_best_checkpoint": true
+        }
+      },
+      "run_dir": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24/74",
+      "test_metrics": null,
+      "val_metrics": {
+        "l1_loss": 3.824157980074263,
+        "recon_loss": 0.22549217718200942,
+        "samples": 2641,
+        "total_loss": 0.22931633296675502
+      }
+    },
+    {
+      "best_epoch": 10,
+      "best_val_recon_loss": 0.22560250480398,
+      "config_path": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24/72/resolved_config.yaml",
+      "hyperparameters": {
+        "hidden_dim": 4096,
+        "l1_lambda": 0.0001,
+        "lr": 0.0003
+      },
+      "metrics_path": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24/72/metrics.json",
+      "override_string": "train.lr=0.0003 sae.hidden_dim=4096 sae.l1_lambda=0.0001",
+      "resolved_config": {
+        "data": {
+          "activation_batch_size": 5,
+          "activation_cache_dir": "experiments/vanilla_sae/cache",
+          "dataset_path": "data/concept_train.json",
+          "dataset_url": "https://huggingface.co/datasets/dhgottesman/sae_concept/resolve/main/concept_train.json",
+          "force_regenerate_activations": false,
+          "test_ratio": 0.1,
+          "train_ratio": 0.8,
+          "val_ratio": 0.1
+        },
+        "evaluation": {
+          "run_test": false,
+          "selection_metric": "val/recon_loss"
+        },
+        "factorization_mode": "residual",
+        "layer": 30,
+        "logging": {
+          "use_wandb": false,
+          "wandb_entity": null,
+          "wandb_project": "vanilla-sae"
+        },
+        "model_name": "gpt2-large",
+        "sae": {
+          "eps": 1e-08,
+          "hidden_dim": 4096,
+          "l1_lambda": 0.0001
+        },
+        "seed": 42,
+        "train": {
+          "batch_size": 256,
+          "data_device": "auto",
+          "device": "auto",
+          "epochs": 10,
+          "lr": 0.0003,
+          "model_device": "auto",
+          "num_workers": "auto",
+          "num_workers_cap": 4,
+          "patience": 2,
+          "save_best_checkpoint": true
+        }
+      },
+      "run_dir": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24/72",
+      "test_metrics": null,
+      "val_metrics": {
+        "l1_loss": 3.8373397720081255,
+        "recon_loss": 0.22560250480398,
+        "samples": 2641,
+        "total_loss": 0.22598623971016468
+      }
+    },
+    {
+      "best_epoch": 10,
+      "best_val_recon_loss": 0.22604558519547926,
+      "config_path": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24/70/resolved_config.yaml",
+      "hyperparameters": {
+        "hidden_dim": 4096,
+        "l1_lambda": 1e-05,
+        "lr": 0.0003
+      },
+      "metrics_path": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24/70/metrics.json",
+      "override_string": "train.lr=0.0003 sae.hidden_dim=4096 sae.l1_lambda=1e-05",
+      "resolved_config": {
+        "data": {
+          "activation_batch_size": 5,
+          "activation_cache_dir": "experiments/vanilla_sae/cache",
+          "dataset_path": "data/concept_train.json",
+          "dataset_url": "https://huggingface.co/datasets/dhgottesman/sae_concept/resolve/main/concept_train.json",
+          "force_regenerate_activations": false,
+          "test_ratio": 0.1,
+          "train_ratio": 0.8,
+          "val_ratio": 0.1
+        },
+        "evaluation": {
+          "run_test": false,
+          "selection_metric": "val/recon_loss"
+        },
+        "factorization_mode": "residual",
+        "layer": 30,
+        "logging": {
+          "use_wandb": false,
+          "wandb_entity": null,
+          "wandb_project": "vanilla-sae"
+        },
+        "model_name": "gpt2-large",
+        "sae": {
+          "eps": 1e-08,
+          "hidden_dim": 4096,
+          "l1_lambda": 1e-05
+        },
+        "seed": 42,
+        "train": {
+          "batch_size": 256,
+          "data_device": "auto",
+          "device": "auto",
+          "epochs": 10,
+          "lr": 0.0003,
+          "model_device": "auto",
+          "num_workers": "auto",
+          "num_workers_cap": 4,
+          "patience": 2,
+          "save_best_checkpoint": true
+        }
+      },
+      "run_dir": "/root/mech-interp-exploration/snmf-mlp/experiments/vanilla_sae/multirun/2026-02-27/17-59-24/70",
+      "test_metrics": null,
+      "val_metrics": {
+        "l1_loss": 3.8394161604065555,
+        "recon_loss": 0.22604558519547926,
+        "samples": 2641,
+        "total_loss": 0.22608397794419824
+      }
+    }
+  ]
+}
