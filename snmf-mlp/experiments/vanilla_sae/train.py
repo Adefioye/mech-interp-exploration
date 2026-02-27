@@ -101,6 +101,7 @@ def load_or_generate_activations(
     cfg: DictConfig,
     dataset_path: Path,
     model_device: torch.device,
+    data_device: torch.device,
 ) -> Tuple[torch.Tensor, Path]:
     cache_path = activation_cache_path(cfg, dataset_path)
     if cache_path.exists() and not cfg.data.force_regenerate_activations:
@@ -112,7 +113,7 @@ def load_or_generate_activations(
     generator = ActivationGenerator(
         cfg.model_name,
         model_device=str(model_device),
-        data_device=cfg.train.data_device,
+        data_device=str(data_device),
         mode=cfg.factorization_mode,
     )
     activations, _ = generator.generate_multiple_layer_activations_and_freq(
@@ -195,6 +196,7 @@ def run_training(cfg: DictConfig) -> Dict:
 
     train_device = resolve_device(cfg.train.device)
     model_device = resolve_device(cfg.train.model_device)
+    data_device = resolve_device(cfg.train.data_device)
     output_dir = Path(HydraConfig.get().runtime.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -202,7 +204,9 @@ def run_training(cfg: DictConfig) -> Dict:
     ensure_dataset(dataset_path, cfg.data.dataset_url)
 
     log(f"Using dataset: {dataset_path}")
-    activations, cache_path = load_or_generate_activations(cfg, dataset_path, model_device)
+    activations, cache_path = load_or_generate_activations(
+        cfg, dataset_path, model_device, data_device
+    )
     splits = split_activations(activations, cfg)
 
     pin_memory = train_device.type == "cuda"
@@ -285,6 +289,7 @@ def run_training(cfg: DictConfig) -> Dict:
         "runtime": {
             "device": str(train_device),
             "model_device": str(model_device),
+            "data_device": str(data_device),
             "num_workers": num_workers,
             "persistent_workers": persistent_workers,
         },
