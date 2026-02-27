@@ -7,8 +7,8 @@ defaults:
   - _self_
 
 seed: 42
-model_name: gpt2-large
-layer: 30
+model_name: gpt2-small
+layer: 10
 factorization_mode: residual
 
 hydra:

@@ -76,7 +76,7 @@ experiments/vanilla_sae/run_sweep.sh
 
 ## Best Hyperparameter Selection
 
-After a sweep, `select_best.py` writes `best_run_summary.json` into the multirun directory and prints the best override string.
+After a sweep, `select_best.py` writes a GitHub-friendly summary under `experiments/vanilla_sae/reports/` and prints the best override string.
 
 Manual usage:
 
@@ -84,6 +84,14 @@ Manual usage:
 cd snmf-mlp
 PYTHONPATH=. python experiments/vanilla_sae/select_best.py \
   --multirun-dir experiments/vanilla_sae/multirun/<date>/<time>
+```
+
+You can control how many top runs are saved:
+
+```bash
+PYTHONPATH=. python experiments/vanilla_sae/select_best.py \
+  --multirun-dir experiments/vanilla_sae/multirun/<date>/<time> \
+  --top-k 3
 ```
 
 The summary also prints a suggested command for final test evaluation with `evaluation.run_test=true`.

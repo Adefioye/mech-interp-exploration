@@ -5,6 +5,8 @@ from typing import Dict, List
 
 import yaml
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
 
 def load_metrics(metrics_path: Path) -> Dict:
     return json.loads(metrics_path.read_text())
@@ -92,14 +94,15 @@ def main() -> None:
             ),
         },
         "top_runs": top_runs,
-        "ranked_runs": ranked_runs,
     }
 
-    output_file = (
-        Path(args.output_file).resolve()
-        if args.output_file
-        else multirun_dir / "best_run_summary.json"
-    )
+    if args.output_file:
+        output_file = Path(args.output_file).resolve()
+    else:
+        reports_dir = PROJECT_ROOT / "experiments" / "vanilla_sae" / "reports"
+        sweep_tag = f"{multirun_dir.parent.name}_{multirun_dir.name}"
+        output_file = reports_dir / f"best_run_summary_{sweep_tag}.json"
+    output_file.parent.mkdir(parents=True, exist_ok=True)
     output_file.write_text(json.dumps(summary, indent=2, sort_keys=True))
 
     print(f"Best run: {best_run['run_dir']}")
