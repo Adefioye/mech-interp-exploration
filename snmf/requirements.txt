@@ -1,0 +1,11 @@
+numpy
+pandas
+torch
+einops
+jaxtyping
+tqdm
+matplotlib
+plotly
+ipython
+nbformat
+scipy
