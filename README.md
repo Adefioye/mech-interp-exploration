@@ -15,3 +15,8 @@ The fundamental goal of this repo is to do mini-project exploration/reproduction
 
 # Paper referenced
 
+
+python select_top_k_configs.py \
+  --input-file results/snmf_grid_20260307_224158.jsonl \
+  --output-file results/top_20_by_similarity.jsonl \
+  --top-k 20
