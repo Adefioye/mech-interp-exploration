@@ -14,6 +14,8 @@ Considering that decomposed matrices(Z, Y) were solved for analytically, I tried
 
 After a grid search over all these hyperparameters using random initializations, the optimal value for `k_scale, closed_form_eqn_reg and sparsity_reg` are `2.00, 1e-4, 0.1` respectively with __MMCS__ of 0.25. This value is still significantly small suggesting trying tweaking other knobs within the same model(e.g initializations) or other approaches altogether.
 
+SVD initializations give 0.253 while Knn at current default gives 1.00. Knn perfect similarity is likely a result of overfitting.
+
 #### TODO
 - [ ] Use maybe SVD, knn or other initializations to validate its quality.
 - [ ] Try different loss functions beside frobenius norm as reconstruction loss.

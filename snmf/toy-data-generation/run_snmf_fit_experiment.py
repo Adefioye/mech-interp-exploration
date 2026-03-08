@@ -399,15 +399,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-iter", type=int, default=500)
     parser.add_argument("--tol", type=float, default=1e-6)
     parser.add_argument("--patience", type=int, default=30)
-    parser.add_argument("--closed-form-eqn-reg", type=float, default=1e-6)
-    parser.add_argument("--sparsity-reg", type=float, default=0.0)
+    parser.add_argument("--closed-form-eqn-reg", type=float, default=1e-4)
+    parser.add_argument("--sparsity-reg", type=float, default=0.1)
     parser.add_argument("--verbose-every", type=int, default=25)
     parser.add_argument("--model-seed", type=int, default=42)
     parser.add_argument("--dtype", choices=["float32", "float64"], default="float32")
     parser.add_argument("--device", choices=["auto", "cpu", "cuda", "mps"], default="mps")
-    parser.add_argument("--init", choices=["random", "svd", "knn"], default="random")
-    parser.add_argument("--knn-iters", type=int, default=15)
-    parser.add_argument("--knn-chunk-size", type=int, default=10_000)
+    parser.add_argument("--init", choices=["random", "svd", "knn"], default="svd")
+    parser.add_argument("--knn-iters", type=int, default=20)
+    parser.add_argument("--knn-chunk-size", type=int, default=5_000)
 
     # Output/logging args.
     parser.add_argument(
