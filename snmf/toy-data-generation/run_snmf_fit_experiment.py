@@ -58,28 +58,19 @@ def fix_scale_inplace(z: t.Tensor, y: t.Tensor, eps: float = 1e-8) -> None:
 class ToyDataConfig:
     num_samples: int = 100_000
     feature_dim: int = 256
-    base_num_ground_truth_features: int = 512
-    ground_truth_scale: float = 1.0
+    num_ground_truth_features: int = 512
     num_active_features: float = 5.0
     decay_rate: float = 0.99
     random_seed: int = 42
-
-    @property
-    def num_ground_truth_features(self) -> int:
-        g = int(round(self.base_num_ground_truth_features * self.ground_truth_scale))
-        if g <= 0:
-            raise ValueError(
-                "Computed num_ground_truth_features must be positive. "
-                f"Got {g} from base={self.base_num_ground_truth_features} "
-                f"and scale={self.ground_truth_scale}."
-            )
-        return g
 
 
 def generate_toy_data(cfg: ToyDataConfig) -> tuple[FloatArray, FloatArray, FloatArray]:
     """Generate toy data A = C @ F^T where C is sparse nonnegative."""
     assert cfg.num_samples > 0, f"num_samples must be positive, got {cfg.num_samples}."
     assert cfg.feature_dim > 0, f"feature_dim must be positive, got {cfg.feature_dim}."
+    assert (
+        cfg.num_ground_truth_features > 0
+    ), f"num_ground_truth_features must be positive, got {cfg.num_ground_truth_features}."
     assert (
         cfg.num_active_features >= 0
     ), f"num_active_features must be nonnegative, got {cfg.num_active_features}."
@@ -306,15 +297,14 @@ def build_parser() -> argparse.ArgumentParser:
     # Toy data args.
     parser.add_argument("--num-samples", type=int, default=100_000)
     parser.add_argument("--feature-dim", type=int, default=256)
-    parser.add_argument("--base-num-ground-truth-features", type=int, default=512)
-    parser.add_argument("--ground-truth-scale", type=float, default=1.0)
+    parser.add_argument("--num-ground-truth-features", type=int, default=512)
     parser.add_argument("--num-active-features", type=float, default=5.0)
     parser.add_argument("--decay-rate", type=float, default=0.99)
     parser.add_argument("--data-seed", type=int, default=42)
 
     # Semi-NMF args.
     parser.add_argument("--k-scale", type=float, default=2.0)
-    parser.add_argument("--max-iter", type=int, default=300)
+    parser.add_argument("--max-iter", type=int, default=500)
     parser.add_argument("--tol", type=float, default=1e-6)
     parser.add_argument("--patience", type=int, default=30)
     parser.add_argument("--closed-form-eqn-reg", type=float, default=1e-6)
@@ -322,7 +312,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--verbose-every", type=int, default=25)
     parser.add_argument("--model-seed", type=int, default=42)
     parser.add_argument("--dtype", choices=["float32", "float64"], default="float32")
-    parser.add_argument("--device", choices=["auto", "cpu", "cuda", "mps"], default="auto")
+    parser.add_argument("--device", choices=["auto", "cpu", "cuda", "mps"], default="mps")
 
     # Output/logging args.
     parser.add_argument(
@@ -343,8 +333,7 @@ def main() -> None:
     toy_cfg = ToyDataConfig(
         num_samples=args.num_samples,
         feature_dim=args.feature_dim,
-        base_num_ground_truth_features=args.base_num_ground_truth_features,
-        ground_truth_scale=args.ground_truth_scale,
+        num_ground_truth_features=args.num_ground_truth_features,
         num_active_features=args.num_active_features,
         decay_rate=args.decay_rate,
         random_seed=args.data_seed,
@@ -373,6 +362,7 @@ def main() -> None:
     dataset, ground_truth_features, _ = generate_toy_data(toy_cfg)
 
     # Semi-NMF fit expects A as (d_hidden, N).
+    # Dataset is currently (N, d_hidden) so we transpose it here before feeding to model.
     a = t.tensor(dataset, dtype=dtype, device=device).T
     model = SemiNMF(k=k, device=device, dtype=dtype)
     result = model.fit(a, model_cfg)
@@ -384,17 +374,10 @@ def main() -> None:
     run_record: dict[str, Any] = {
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "mean_max_cosine_similarity": similarity,
-        "best_loss": result.best_loss,
-        "best_iter": result.best_iter,
         "elapsed_seconds": elapsed,
-        "resolved": {
-            "device": str(device),
-            "dtype": str(dtype),
-            "G": g,
-            "K": k,
-        },
-        "toy_data_config": asdict(toy_cfg) | {"num_ground_truth_features": g},
-        "seminmf_config": asdict(model_cfg),
+        "k_scale": model_cfg.k_scale,
+        "closed_form_eqn_reg": model_cfg.closed_form_eqn_reg,
+        "sparsity_reg": model_cfg.sparsity_reg,
     }
 
     if args.results_file is not None:
