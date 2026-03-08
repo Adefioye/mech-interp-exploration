@@ -12,7 +12,7 @@ Considering that decomposed matrices(Z, Y) were solved for analytically, I tried
 - `closed_form_eqn_reg` (ridge regularizer): `1e-8`, `1e-7`, `1e-6`, `1e-5`, `1e-4`
 - `sparsity_reg` (sparsity regularizer): `0.0`, `1e-4`, `1e-3`, `1e-2`, `1e-1`
 
-After a grid search over all these hyperparameters, the optimal value for `k_scale, closed_form_eqn_reg and sparsity_reg` are `2.00, 1e-4, 0.1` respectively with __MMCS__ of 0.25. This value is still significantly small suggesting trying tweaking other knobs within the same model(e.g initializations) or other approaches altogether.
+After a grid search over all these hyperparameters using random initializations, the optimal value for `k_scale, closed_form_eqn_reg and sparsity_reg` are `2.00, 1e-4, 0.1` respectively with __MMCS__ of 0.25. This value is still significantly small suggesting trying tweaking other knobs within the same model(e.g initializations) or other approaches altogether.
 
 #### TODO
 - [ ] Use maybe SVD, knn or other initializations to validate its quality.

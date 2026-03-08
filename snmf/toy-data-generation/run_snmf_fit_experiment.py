@@ -54,6 +54,82 @@ def fix_scale_inplace(z: t.Tensor, y: t.Tensor, eps: float = 1e-8) -> None:
     z.mul_(col_norms.squeeze(0))
 
 
+@t.no_grad()
+def init_svd(a: t.Tensor, k: int, eps: float = 1e-8) -> tuple[t.Tensor, t.Tensor]:
+    """SVD-based initialization for Semi-NMF (single variant)."""
+    d_hidden, n = a.shape
+    rank = min(d_hidden, n, k)
+
+    u, s, vh = t.linalg.svd(a, full_matrices=False)
+    u = u[:, :rank]
+    s = s[:rank]
+    vh = vh[:rank, :]
+
+    sroot = s.sqrt()
+    z = u * sroot.unsqueeze(0)                      # (d_hidden, rank)
+    y = (sroot.unsqueeze(1) * vh).T.clamp_min(eps)  # (n, rank), forced nonnegative
+
+    # If k exceeds truncated SVD rank, pad remaining factors randomly.
+    if rank < k:
+        z_pad = t.randn((d_hidden, k - rank), device=a.device, dtype=a.dtype)
+        y_pad = t.rand((n, k - rank), device=a.device, dtype=a.dtype).clamp_min(eps)
+        z = t.cat([z, z_pad], dim=1)
+        y = t.cat([y, y_pad], dim=1)
+
+    return z, y
+
+
+@t.no_grad()
+def init_knn(
+    a: t.Tensor,
+    k: int,
+    n_iter: int = 15,
+    eps: float = 1e-8,
+    chunk_size: int = 10_000,
+) -> tuple[t.Tensor, t.Tensor]:
+    """K-means/KNN-style initialization for Semi-NMF."""
+    d_hidden, n = a.shape
+    x = a.T  # (n, d_hidden)
+    device = a.device
+
+    if k <= n:
+        perm = t.randperm(n, device=device)
+        centres = x[perm[:k]].clone()
+    else:
+        rand_idx = t.randint(0, n, (k,), device=device)
+        centres = x[rand_idx].clone()
+
+    labels = t.empty(n, dtype=t.long, device=device)
+
+    for _ in range(n_iter):
+        c2 = (centres * centres).sum(dim=1).unsqueeze(0)  # (1, k)
+
+        for start in range(0, n, chunk_size):
+            end = min(n, start + chunk_size)
+            block = x[start:end]  # (b, d_hidden)
+            x2 = (block * block).sum(dim=1, keepdim=True)  # (b, 1)
+            dot = block @ centres.T  # (b, k)
+            dist2 = x2 + c2 - 2.0 * dot
+            labels[start:end] = dist2.argmin(dim=1)
+
+        counts = t.bincount(labels, minlength=k).unsqueeze(1)  # (k, 1)
+        sums = t.zeros((k, d_hidden), device=device, dtype=a.dtype)
+        sums.scatter_add_(0, labels.view(-1, 1).expand(-1, d_hidden), x)
+
+        centres = sums / counts.clamp_min(1)
+
+        empty = (counts.squeeze(1) == 0).nonzero(as_tuple=False).view(-1)
+        if empty.numel() > 0:
+            rand_idx = t.randint(0, n, (empty.numel(),), device=device)
+            centres[empty] = x[rand_idx]
+
+    z = centres.T  # (d_hidden, k)
+    y = t.zeros((n, k), device=device, dtype=a.dtype)
+    y[t.arange(n, device=device), labels] = 1.0
+    y.clamp_min_(eps)
+    return z, y
+
+
 @dataclass(frozen=True)
 class ToyDataConfig:
     num_samples: int = 100_000
@@ -140,6 +216,9 @@ class SemiNMFConfig:
     verbose_every: int = 25
     seed: int = 42
     dtype: str = "float32"
+    init: str = "random"
+    knn_iters: int = 15
+    knn_chunk_size: int = 10_000
 
 
 class SemiNMF(nn.Module):
@@ -162,8 +241,21 @@ class SemiNMF(nn.Module):
         d_hidden, n = a.shape
         k = self.k
 
-        y = t.rand((n, k), device=self.device, dtype=self.dtype).clamp_min(1e-8)
-        z = t.randn((d_hidden, k), device=self.device, dtype=self.dtype)
+        if cfg.init == "random":
+            y = t.rand((n, k), device=self.device, dtype=self.dtype).clamp_min(1e-8)
+            z = t.randn((d_hidden, k), device=self.device, dtype=self.dtype)
+        elif cfg.init == "svd":
+            z, y = init_svd(a, k=k, eps=1e-8)
+        elif cfg.init == "knn":
+            z, y = init_knn(
+                a,
+                k=k,
+                n_iter=cfg.knn_iters,
+                eps=1e-8,
+                chunk_size=cfg.knn_chunk_size,
+            )
+        else:
+            raise ValueError(f"Unsupported init '{cfg.init}'. Use random, svd, or knn.")
 
         best_loss = float("inf")
         best_iter = -1
@@ -313,6 +405,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model-seed", type=int, default=42)
     parser.add_argument("--dtype", choices=["float32", "float64"], default="float32")
     parser.add_argument("--device", choices=["auto", "cpu", "cuda", "mps"], default="mps")
+    parser.add_argument("--init", choices=["random", "svd", "knn"], default="random")
+    parser.add_argument("--knn-iters", type=int, default=15)
+    parser.add_argument("--knn-chunk-size", type=int, default=10_000)
 
     # Output/logging args.
     parser.add_argument(
@@ -350,6 +445,9 @@ def main() -> None:
         verbose_every=args.verbose_every,
         seed=args.model_seed,
         dtype=args.dtype,
+        init=args.init,
+        knn_iters=args.knn_iters,
+        knn_chunk_size=args.knn_chunk_size,
     )
 
     device = resolve_device(args.device)
@@ -358,7 +456,7 @@ def main() -> None:
     if k <= 0:
         raise ValueError(f"Computed k must be positive, got {k}.")
 
-    print(f"Using device={device}, dtype={dtype}, G={g}, K={k}")
+    print(f"Using device={device}, dtype={dtype}, init={model_cfg.init}, G={g}, K={k}")
     dataset, ground_truth_features, _ = generate_toy_data(toy_cfg)
 
     # Semi-NMF fit expects A as (d_hidden, N).
@@ -378,6 +476,9 @@ def main() -> None:
         "k_scale": model_cfg.k_scale,
         "closed_form_eqn_reg": model_cfg.closed_form_eqn_reg,
         "sparsity_reg": model_cfg.sparsity_reg,
+        "init": model_cfg.init,
+        "knn_iters": model_cfg.knn_iters,
+        "knn_chunk_size": model_cfg.knn_chunk_size,
     }
 
     if args.results_file is not None:
