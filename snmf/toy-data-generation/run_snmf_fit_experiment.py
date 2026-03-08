@@ -381,6 +381,13 @@ def append_result(path: Path, record: dict[str, Any]) -> None:
         f.write(json.dumps(record) + "\n")
 
 
+def default_results_file() -> Path:
+    """Default JSONL output path under this directory's results/ folder."""
+    script_dir = Path(__file__).resolve().parent
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    return script_dir / "results" / f"snmf_fit_{timestamp}.jsonl"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run toy-data Semi-NMF fit experiment and log similarity.",
@@ -405,7 +412,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model-seed", type=int, default=42)
     parser.add_argument("--dtype", choices=["float32", "float64"], default="float32")
     parser.add_argument("--device", choices=["auto", "cpu", "cuda", "mps"], default="mps")
-    parser.add_argument("--init", choices=["random", "svd", "knn"], default="svd")
+    parser.add_argument("--init", choices=["random", "svd", "knn"], default="random")
     parser.add_argument("--knn-iters", type=int, default=20)
     parser.add_argument("--knn-chunk-size", type=int, default=5_000)
 
@@ -414,7 +421,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--results-file",
         type=Path,
         default=None,
-        help="Optional output path. Use .json for JSON array append, or .jsonl for line append.",
+        help=(
+            "Output path. If omitted, auto-saves to "
+            "snmf/toy-data-generation/results/snmf_fit_<UTC timestamp>.jsonl."
+        ),
     )
     parser.add_argument("--print-json", action="store_true")
 
@@ -473,17 +483,16 @@ def main() -> None:
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "mean_max_cosine_similarity": similarity,
         "elapsed_seconds": elapsed,
+        "num_samples": toy_cfg.num_samples,
         "k_scale": model_cfg.k_scale,
         "closed_form_eqn_reg": model_cfg.closed_form_eqn_reg,
         "sparsity_reg": model_cfg.sparsity_reg,
         "init": model_cfg.init,
-        "knn_iters": model_cfg.knn_iters,
-        "knn_chunk_size": model_cfg.knn_chunk_size,
     }
 
-    if args.results_file is not None:
-        append_result(args.results_file, run_record)
-        print(f"Appended result to {args.results_file}")
+    results_file = args.results_file if args.results_file is not None else default_results_file()
+    append_result(results_file, run_record)
+    print(f"Appended result to {results_file}")
 
     print(f"Mean max cosine similarity: {similarity:.6f}")
     if args.print_json:
