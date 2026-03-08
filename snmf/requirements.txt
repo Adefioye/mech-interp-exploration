@@ -9,3 +9,5 @@ plotly
 ipython
 nbformat
 scipy
+scikit-learn
+torchnmf
