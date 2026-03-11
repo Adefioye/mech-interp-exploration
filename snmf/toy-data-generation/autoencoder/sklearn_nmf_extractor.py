@@ -46,6 +46,11 @@ class SklearnNMFExtractor(BaseFeatureExtractor):
         cfg = self.config
         x = np.asarray(activations, dtype=np.float64)
 
+        # The format of input into sklearn NMF should be (n_samples, n_features), which is (num_samples, d_hidden) in our case.
+        # Hence, we transpose the input.
+        x = x.T  # Now shape is (n_samples, d_hidden)
+        print(f"Input activations shape: {x.shape}")
+
         shift_value = 0.0
         x_fit = x
         if cfg.shift_to_nonnegative:

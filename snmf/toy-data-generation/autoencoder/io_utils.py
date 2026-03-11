@@ -5,6 +5,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+import torch as t
+
 
 def append_result(path: Path, record: dict[str, Any]) -> None:
     """Append a run record to .json (array) or .jsonl (one JSON per line)."""
@@ -29,3 +32,18 @@ def default_results_file(prefix: str = "feature_extraction") -> Path:
     script_dir = Path(__file__).resolve().parent.parent
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     return script_dir / "results" / f"{prefix}_{timestamp}.jsonl"
+
+
+def count_negative_elements(data: t.Tensor | np.ndarray | list[Any]) -> int:
+    """Return the total number of negative values in tensor/ndarray/list input."""
+    if isinstance(data, t.Tensor):
+        return int((data < 0).sum().item())
+
+    if isinstance(data, (np.ndarray, list)):
+        arr = np.asarray(data)
+        try:
+            return int(np.sum(arr < 0))
+        except TypeError as exc:
+            raise TypeError("Input must contain numeric values.") from exc
+
+    raise TypeError(f"Expected torch.Tensor, np.ndarray, or list; got {type(data)!r}.")
