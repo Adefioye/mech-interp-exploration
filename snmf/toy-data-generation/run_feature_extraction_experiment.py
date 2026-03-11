@@ -45,7 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     # Toy data.
     parser.add_argument("--num-samples", type=int, default=100_000)
-    parser.add_argument("--feature-dim", type=int, default=256)
+    parser.add_argument("--d-hidden", type=int, default=256)
     parser.add_argument("--num-ground-truth-features", type=int, default=512)
     parser.add_argument("--num-active-features", type=float, default=5.0)
     parser.add_argument("--decay-rate", type=float, default=0.99)
@@ -108,7 +108,7 @@ def main() -> None:
 
     toy_cfg = ToyDataConfig(
         num_samples=args.num_samples,
-        feature_dim=args.feature_dim,
+        d_hidden=args.d_hidden,
         num_ground_truth_features=args.num_ground_truth_features,
         num_active_features=args.num_active_features,
         decay_rate=args.decay_rate,

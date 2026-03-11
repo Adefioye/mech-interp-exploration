@@ -11,7 +11,8 @@ import numpy as np
 class FeatureExtractionResult:
     """Common fit output for all feature extraction techniques."""
 
-    learned_features: np.ndarray  # shape: (feature_dim, n_components)
+    # TODO: Verify the shapes later and make it consistent with nmf and sparse-nmf methods.
+    learned_features: np.ndarray  # shape: (d_hidden, n_components)
     coefficients: np.ndarray      # shape: (num_samples, n_components)
     reconstruction_loss: float | None
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -27,7 +28,7 @@ class BaseFeatureExtractor(ABC):
 
     @abstractmethod
     def fit(self, activations: np.ndarray) -> FeatureExtractionResult:
-        """Fit on activations with shape (num_samples, feature_dim)."""
+        """Fit on activations with shape (num_samples, d_hidden)."""
         raise NotImplementedError
 
     @abstractmethod

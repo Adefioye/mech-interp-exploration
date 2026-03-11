@@ -13,7 +13,7 @@ FloatArray = NDArray[np.float64]
 @dataclass(frozen=True)
 class ToyDataConfig:
     num_samples: int = 100_000
-    feature_dim: int = 256
+    d_hidden: int = 256
     num_ground_truth_features: int = 512
     num_active_features: float = 5.0
     decay_rate: float = 0.99
@@ -23,7 +23,7 @@ class ToyDataConfig:
 def generate_toy_data(cfg: ToyDataConfig) -> tuple[FloatArray, FloatArray, FloatArray]:
     """Generate toy dataset with sparse nonnegative coefficients."""
     assert cfg.num_samples > 0, f"num_samples must be positive, got {cfg.num_samples}."
-    assert cfg.feature_dim > 0, f"feature_dim must be positive, got {cfg.feature_dim}."
+    assert cfg.d_hidden > 0, f"d_hidden must be positive, got {cfg.d_hidden}."
     assert (
         cfg.num_ground_truth_features > 0
     ), f"num_ground_truth_features must be positive, got {cfg.num_ground_truth_features}."
@@ -35,7 +35,7 @@ def generate_toy_data(cfg: ToyDataConfig) -> tuple[FloatArray, FloatArray, Float
     rng = np.random.default_rng(cfg.random_seed)
     g = cfg.num_ground_truth_features
 
-    ground_truth_features: FloatArray = rng.standard_normal(size=(cfg.feature_dim, g))
+    ground_truth_features: FloatArray = rng.standard_normal(size=(cfg.d_hidden, g))
     col_norms: FloatArray = np.linalg.norm(ground_truth_features, axis=0)
     col_norms = np.where(col_norms == 0.0, 1.0, col_norms)
     ground_truth_features = ground_truth_features / col_norms
@@ -47,7 +47,7 @@ def generate_toy_data(cfg: ToyDataConfig) -> tuple[FloatArray, FloatArray, Float
     correlated_feature_probs: FloatArray = norm.cdf(gaussian_samples)
 
     sparse_coefficients: FloatArray = np.zeros((cfg.num_samples, g), dtype=np.float64)
-    dataset: FloatArray = np.zeros((cfg.num_samples, cfg.feature_dim), dtype=np.float64)
+    dataset: FloatArray = np.zeros((cfg.num_samples, cfg.d_hidden), dtype=np.float64)
     feature_indices: FloatArray = np.arange(g, dtype=np.float64)
 
     for i in tqdm(range(cfg.num_samples), desc="Generating toy data"):

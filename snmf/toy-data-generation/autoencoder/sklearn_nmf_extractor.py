@@ -75,12 +75,12 @@ class SklearnNMFExtractor(BaseFeatureExtractor):
 
         model = NMF(**nmf_kwargs)
         coefficients = model.fit_transform(x_fit)  # W: (n_samples, n_components)
-        components = model.components_             # H: (n_components, feature_dim)
+        components = model.components_             # H: (n_components, d_hidden)
 
         reconstruction = coefficients @ components
         reconstruction_loss = float(np.linalg.norm(x_fit - reconstruction, ord="fro") ** 2)
 
-        learned_features = components.T  # (feature_dim, n_components)
+        learned_features = components.T  # (d_hidden, n_components)
 
         return FeatureExtractionResult(
             learned_features=learned_features.astype(np.float64, copy=False),

@@ -110,7 +110,7 @@ class SemiNMFExtractorConfig:
     knn_iters: int = 20
     knn_chunk_size: int = 5_000
     dtype: t.dtype = t.float32
-    device: t.device = t.device("cpu")
+    device: t.device = t.device("mps")
 
 
 class SemiNMFExtractor(BaseFeatureExtractor):
@@ -179,7 +179,7 @@ class SemiNMFExtractor(BaseFeatureExtractor):
             a_hat = z @ y.T
             loss = t.norm(a - a_hat, p="fro").pow(2).item()
 
-            if loss < best_loss - cfg.tol:
+            if loss < (best_loss - cfg.tol):
                 best_loss = loss
                 best_iter = it
                 best_z = z.detach().clone()
