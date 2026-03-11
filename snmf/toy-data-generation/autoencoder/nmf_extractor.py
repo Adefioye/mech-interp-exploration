@@ -18,19 +18,19 @@ class NMFConfig:
     n_components: int
     max_iter: int = 500
     tol: float = 1e-4
-    init: str = "nndsvda"
+    init: str = "random"
     solver: str = "cd"
     beta_loss: str = "frobenius"
     alpha_w: float = 0.0
     alpha_h: float = 0.0
     l1_ratio: float = 0.0
     random_state: int = 42
-    shift_to_nonnegative: bool = True
 
 
 class NMF(BaseFeatureExtractor):
     def __init__(self, config: NMFConfig):
         self.config = config
+        self.shift = 0.0
 
     @property
     def method_name(self) -> str:
@@ -54,6 +54,14 @@ class NMF(BaseFeatureExtractor):
 
         print(f"[{self.method_name}] Input activations shape: {x.shape}")
         print(f"[{self.method_name}] Negative elements in input: {negative_count}")
+
+        if negative_count > 0:
+            print(
+                f"[{self.method_name}] Warning: Input contains {negative_count} negative elements. "
+                "NMF requires non-negative inputs. Shifting input to be non-negative."
+            )
+            self.shift = -x.min()
+            x += self.shift
 
         x_fit = x
 

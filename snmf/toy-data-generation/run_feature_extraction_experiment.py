@@ -36,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--method",
         choices=["semi_nmf", "nmf", "sparse_nmf"],
-        default="semi_nmf",
+        default="nmf",
     )
 
     # Shared sizing.
@@ -70,14 +70,13 @@ def build_parser() -> argparse.ArgumentParser:
     # sklearn NMF-specific.
     parser.add_argument("--nmf-max-iter", type=int, default=500)
     parser.add_argument("--nmf-tol", type=float, default=1e-4)
-    parser.add_argument("--nmf-init", default="nndsvda")
+    parser.add_argument("--nmf-init", default="random", choices=["random", "nndsvda", "nndsvdar", "nndsvd"])
     parser.add_argument("--nmf-solver", choices=["cd", "mu"], default="cd")
     parser.add_argument("--nmf-beta-loss", default="frobenius")
     parser.add_argument("--nmf-alpha-w", type=float, default=0.0)
     parser.add_argument("--nmf-alpha-h", type=float, default=0.0)
     parser.add_argument("--nmf-l1-ratio", type=float, default=0.0)
     parser.add_argument("--nmf-random-state", type=int, default=42)
-    parser.add_argument("--nmf-no-shift", action="store_true")
 
     # torchnmf sparse NMF-specific.
     parser.add_argument("--sparse-nmf-max-iter", type=int, default=500)
@@ -154,7 +153,6 @@ def main() -> None:
         alpha_h=args.nmf_alpha_h,
         l1_ratio=args.nmf_l1_ratio,
         random_state=args.nmf_random_state,
-        shift_to_nonnegative=not args.nmf_no_shift,
     )
 
     sparse_nmf_cfg = SparseNMFConfig(
