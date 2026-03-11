@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 import numpy as np
 
 from autoencoder.base_extractor import BaseFeatureExtractor, FeatureExtractionResult
+from autoencoder.io_utils import count_negative_elements
 
 
 @dataclass(frozen=True)
@@ -51,13 +52,9 @@ class SklearnNMFExtractor(BaseFeatureExtractor):
         x = x.T  # Now shape is (n_samples, d_hidden)
         print(f"Input activations shape: {x.shape}")
 
-        shift_value = 0.0
-        x_fit = x
-        if cfg.shift_to_nonnegative:
-            min_val = float(np.min(x))
-            if min_val < 0.0:
-                shift_value = -min_val
-                x_fit = x + shift_value
+        number_of_negatives_in_input = count_negative_elements(x)
+
+        print(f"Number of negative values in input: {number_of_negatives_in_input}")
 
         nmf_kwargs = {
             "n_components": cfg.n_components,
@@ -79,11 +76,11 @@ class SklearnNMFExtractor(BaseFeatureExtractor):
             nmf_kwargs["alpha"] = cfg.alpha_w
 
         model = NMF(**nmf_kwargs)
-        coefficients = model.fit_transform(x_fit)  # W: (n_samples, n_components)
+        coefficients = model.fit_transform(x)  # W: (n_samples, n_components)
         components = model.components_             # H: (n_components, d_hidden)
 
         reconstruction = coefficients @ components
-        reconstruction_loss = float(np.linalg.norm(x_fit - reconstruction, ord="fro") ** 2)
+        reconstruction_loss = float(np.linalg.norm(x - reconstruction, ord="fro") ** 2)
 
         learned_features = components.T  # (d_hidden, n_components)
 
@@ -92,7 +89,6 @@ class SklearnNMFExtractor(BaseFeatureExtractor):
             coefficients=coefficients.astype(np.float64, copy=False),
             reconstruction_loss=reconstruction_loss,
             metadata={
-                "shift_value": shift_value,
                 "n_iter": getattr(model, "n_iter_", None),
                 "reconstruction_err": float(getattr(model, "reconstruction_err_", np.nan)),
             },

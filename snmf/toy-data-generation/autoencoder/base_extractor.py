@@ -12,8 +12,9 @@ class FeatureExtractionResult:
     """Common fit output for all feature extraction techniques."""
 
     # TODO: Verify the shapes later and make it consistent with nmf and sparse-nmf methods.
+    # NOTE: n_components = number of extracted features, which is the "rank" of the factorization.
     learned_features: np.ndarray  # shape: (d_hidden, n_components)
-    coefficients: np.ndarray      # shape: (num_samples, n_components)
+    coefficients: np.ndarray      # shape: (n_components, num_samples)
     reconstruction_loss: float | None
     metadata: dict[str, Any] = field(default_factory=dict)
 

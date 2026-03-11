@@ -5,6 +5,7 @@ from autoencoder.semi_nmf_extractor import SemiNMFExtractor, SemiNMFExtractorCon
 from autoencoder.sklearn_nmf_extractor import SklearnNMFExtractor, SklearnNMFExtractorConfig
 from autoencoder.torchnmf_sparse_extractor import TorchNMFExtractorConfig, TorchNMFSparseExtractor
 from autoencoder.toy_data import ToyDataConfig, generate_toy_data
+from autoencoder.io_utils import append_result, default_results_file, count_negative_elements
 
 __all__ = [
     "BaseFeatureExtractor",
@@ -19,4 +20,7 @@ __all__ = [
     "TorchNMFSparseExtractor",
     "ToyDataConfig",
     "generate_toy_data",
+    "append_result",
+    "default_results_file",
+    "count_negative_elements",
 ]
