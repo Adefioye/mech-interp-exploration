@@ -56,16 +56,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--device", choices=["auto", "cpu", "cuda", "mps"], default="mps")
 
     # Semi-NMF-specific.
-    parser.add_argument("--semi-max-iter", type=int, default=500)
-    parser.add_argument("--semi-tol", type=float, default=1e-6)
-    parser.add_argument("--semi-patience", type=int, default=30)
-    parser.add_argument("--semi-closed-form-eqn-reg", type=float, default=1e-4)
-    parser.add_argument("--semi-sparsity-reg", type=float, default=0.1)
-    parser.add_argument("--semi-verbose-every", type=int, default=25)
-    parser.add_argument("--semi-seed", type=int, default=42)
-    parser.add_argument("--semi-init", choices=["random", "svd", "knn"], default="random")
-    parser.add_argument("--semi-knn-iters", type=int, default=20)
-    parser.add_argument("--semi-knn-chunk-size", type=int, default=5_000)
+    parser.add_argument("--semi-nmf-max-iter", type=int, default=500)
+    parser.add_argument("--semi-nmf-tol", type=float, default=1e-6)
+    parser.add_argument("--semi-nmf-patience", type=int, default=30)
+    parser.add_argument("--semi-nmf-closed-form-eqn-reg", type=float, default=1e-4)
+    parser.add_argument("--semi-nmf-sparsity-reg", type=float, default=0.1)
+    parser.add_argument("--semi-nmf-verbose-every", type=int, default=25)
+    parser.add_argument("--semi-nmf-seed", type=int, default=42)
+    parser.add_argument("--semi-nmf-init", choices=["random", "svd", "knn"], default="random")
+    parser.add_argument("--semi-nmf-knn-iters", type=int, default=20)
+    parser.add_argument("--semi-nmf-knn-chunk-size", type=int, default=5_000)
 
     # sklearn NMF-specific.
     parser.add_argument("--sk-max-iter", type=int, default=500)
@@ -129,16 +129,16 @@ def main() -> None:
 
     semi_cfg = SemiNMFConfig(
         n_components=n_components,
-        max_iter=args.semi_max_iter,
-        tol=args.semi_tol,
-        patience=args.semi_patience,
-        closed_form_eqn_reg=args.semi_closed_form_eqn_reg,
-        sparsity_reg=args.semi_sparsity_reg,
-        verbose_every=args.semi_verbose_every,
-        seed=args.semi_seed,
-        init=args.semi_init,
-        knn_iters=args.semi_knn_iters,
-        knn_chunk_size=args.semi_knn_chunk_size,
+        max_iter=args.semi_nmf_max_iter,
+        tol=args.semi_nmf_tol,
+        patience=args.semi_nmf_patience,
+        closed_form_eqn_reg=args.semi_nmf_closed_form_eqn_reg,
+        sparsity_reg=args.semi_nmf_sparsity_reg,
+        verbose_every=args.semi_nmf_verbose_every,
+        seed=args.semi_nmf_seed,
+        init=args.semi_nmf_init,
+        knn_iters=args.semi_nmf_knn_iters,
+        knn_chunk_size=args.semi_nmf_knn_chunk_size,
         dtype=dtype_t,
         device=device_t,
     )

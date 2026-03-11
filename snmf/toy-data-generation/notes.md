@@ -18,7 +18,9 @@ SVD initializations give 0.253 while Knn at current default gives 1.00. Knn perf
 
 We also varied dataset sizes between 5000 - 100000 with range of similarity scores between 0.246 - 0.253. This suggest dataset size has minimal impact on similarity scores and ultimately weak improvement in the quality of learned features extracted by SNMF. I certainly would have looked into using other loss functions for reconstructions such as KL-divergence
 
-#### TODO
-- [ ] Use maybe SVD, knn or other initializations to validate its quality.
-- [ ] Try different loss functions beside frobenius norm as reconstruction loss.
+## TODO:
+- [ ] After experimenting with SemiNMF. Retry with optimal parameters but now without sparsity loss.
+- [ ] Run NMF and tweak hyperparameters to see how far it similarity goes.
+- [ ] Run SparseNMF(Hoyer's method for NMF with sparsity constraint) and tweak hyperparams to see how far similarity goes.
+
 
