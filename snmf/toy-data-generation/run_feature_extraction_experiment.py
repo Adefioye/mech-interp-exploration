@@ -68,26 +68,26 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--semi-nmf-knn-chunk-size", type=int, default=5_000)
 
     # sklearn NMF-specific.
-    parser.add_argument("--sk-max-iter", type=int, default=500)
-    parser.add_argument("--sk-tol", type=float, default=1e-4)
-    parser.add_argument("--sk-init", default="nndsvda")
-    parser.add_argument("--sk-solver", choices=["cd", "mu"], default="cd")
-    parser.add_argument("--sk-beta-loss", default="frobenius")
-    parser.add_argument("--sk-alpha-w", type=float, default=0.0)
-    parser.add_argument("--sk-alpha-h", type=float, default=0.0)
-    parser.add_argument("--sk-l1-ratio", type=float, default=0.0)
-    parser.add_argument("--sk-random-state", type=int, default=42)
-    parser.add_argument("--sk-no-shift", action="store_true")
+    parser.add_argument("--nmf-max-iter", type=int, default=500)
+    parser.add_argument("--nmf-tol", type=float, default=1e-4)
+    parser.add_argument("--nmf-init", default="nndsvda")
+    parser.add_argument("--nmf-solver", choices=["cd", "mu"], default="cd")
+    parser.add_argument("--nmf-beta-loss", default="frobenius")
+    parser.add_argument("--nmf-alpha-w", type=float, default=0.0)
+    parser.add_argument("--nmf-alpha-h", type=float, default=0.0)
+    parser.add_argument("--nmf-l1-ratio", type=float, default=0.0)
+    parser.add_argument("--nmf-random-state", type=int, default=42)
+    parser.add_argument("--nmf-no-shift", action="store_true")
 
     # torchnmf sparse NMF-specific.
-    parser.add_argument("--tnmf-max-iter", type=int, default=500)
-    parser.add_argument("--tnmf-beta", type=float, default=2.0)
-    parser.add_argument("--tnmf-s-w", type=float, default=None)
-    parser.add_argument("--tnmf-s-h", type=float, default=None)
-    parser.add_argument("--tnmf-l1-strength", type=float, default=0.0)
-    parser.add_argument("--tnmf-seed", type=int, default=42)
-    parser.add_argument("--tnmf-verbose", action="store_true")
-    parser.add_argument("--tnmf-no-shift", action="store_true")
+    parser.add_argument("--sparse-nmf-max-iter", type=int, default=500)
+    parser.add_argument("--sparse-nmf-beta", type=float, default=2.0)
+    parser.add_argument("--sparse-nmf-s-w", type=float, default=None)
+    parser.add_argument("--sparse-nmf-s-h", type=float, default=None)
+    parser.add_argument("--sparse-nmf-l1-strength", type=float, default=0.0)
+    parser.add_argument("--sparse-nmf-seed", type=int, default=42)
+    parser.add_argument("--sparse-nmf-verbose", action="store_true")
+    parser.add_argument("--sparse-nmf-no-shift", action="store_true")
 
     # Logging.
     parser.add_argument(
@@ -145,30 +145,30 @@ def main() -> None:
 
     nmf_cfg = NMFConfig(
         n_components=n_components,
-        max_iter=args.sk_max_iter,
-        tol=args.sk_tol,
-        init=args.sk_init,
-        solver=args.sk_solver,
-        beta_loss=args.sk_beta_loss,
-        alpha_w=args.sk_alpha_w,
-        alpha_h=args.sk_alpha_h,
-        l1_ratio=args.sk_l1_ratio,
-        random_state=args.sk_random_state,
-        shift_to_nonnegative=not args.sk_no_shift,
+        max_iter=args.nmf_max_iter,
+        tol=args.nmf_tol,
+        init=args.nmf_init,
+        solver=args.nmf_solver,
+        beta_loss=args.nmf_beta_loss,
+        alpha_w=args.nmf_alpha_w,
+        alpha_h=args.nmf_alpha_h,
+        l1_ratio=args.nmf_l1_ratio,
+        random_state=args.nmf_random_state,
+        shift_to_nonnegative=not args.nmf_no_shift,
     )
 
     sparse_nmf_cfg = SparseNMFConfig(
         n_components=n_components,
-        max_iter=args.tnmf_max_iter,
-        beta=args.tnmf_beta,
-        s_w=args.tnmf_s_w,
-        s_h=args.tnmf_s_h,
-        l1_strength=args.tnmf_l1_strength,
-        seed=args.tnmf_seed,
+        max_iter=args.sparse_nmf_max_iter,
+        beta=args.sparse_nmf_beta,
+        s_w=args.sparse_nmf_s_w,
+        s_h=args.sparse_nmf_s_h,
+        l1_strength=args.sparse_nmf_l1_strength,
+        seed=args.sparse_nmf_seed,
         dtype=args.dtype,
         device=args.device,
-        shift_to_nonnegative=not args.tnmf_no_shift,
-        verbose=args.tnmf_verbose,
+        shift_to_nonnegative=not args.sparse_nmf_no_shift,
+        verbose=args.sparse_nmf_verbose,
     )
 
     print(
