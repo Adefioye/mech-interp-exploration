@@ -5,7 +5,11 @@ from dataclasses import asdict, dataclass
 import numpy as np
 import torch as t
 
-from autoencoder.base_extractor import BaseFeatureExtractor, FeatureExtractionResult
+from autoencoder.base_extractor import (
+    BaseFeatureExtractor,
+    FeatureExtractionResult,
+    validate_factorization_shapes,
+)
 from autoencoder.common import set_seed
 
 
@@ -202,11 +206,24 @@ class SemiNMFExtractor(BaseFeatureExtractor):
                 break
 
         assert best_z is not None and best_y is not None
+        learned_features = best_z.detach().cpu().numpy().astype(np.float64, copy=False)
+        # Return coefficients as (n_components, num_samples).
+        coefficients = best_y.detach().cpu().numpy().T.astype(np.float64, copy=False)
+        validate_factorization_shapes(
+            activations=x,
+            learned_features=learned_features,
+            coefficients=coefficients,
+            n_components=cfg.n_components,
+            method_name=self.method_name,
+        )
+
         return FeatureExtractionResult(
-            learned_features=best_z.detach().cpu().numpy().astype(np.float64, copy=False),
-            coefficients=best_y.detach().cpu().numpy().astype(np.float64, copy=False),
+            learned_features=learned_features,
+            coefficients=coefficients,
             reconstruction_loss=best_loss,
             metadata={
                 "best_iter": best_iter,
+                "n_components": cfg.n_components,
+                "n_learned_features": int(learned_features.shape[1]),
             },
         )

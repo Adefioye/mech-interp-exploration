@@ -5,7 +5,11 @@ from dataclasses import asdict, dataclass
 
 import numpy as np
 
-from autoencoder.base_extractor import BaseFeatureExtractor, FeatureExtractionResult
+from autoencoder.base_extractor import (
+    BaseFeatureExtractor,
+    FeatureExtractionResult,
+    validate_factorization_shapes,
+)
 from autoencoder.io_utils import count_negative_elements
 
 
@@ -46,15 +50,12 @@ class SklearnNMFExtractor(BaseFeatureExtractor):
 
         cfg = self.config
         x = np.asarray(activations, dtype=np.float64)
+        negative_count = count_negative_elements(x)
 
-        # The format of input into sklearn NMF should be (n_samples, n_features), which is (num_samples, d_hidden) in our case.
-        # Hence, we transpose the input.
-        x = x.T  # Now shape is (n_samples, d_hidden)
-        print(f"Input activations shape: {x.shape}")
+        print(f"[{self.method_name}] Input activations shape: {x.shape}")
+        print(f"[{self.method_name}] Negative elements in input: {negative_count}")
 
-        number_of_negatives_in_input = count_negative_elements(x)
-
-        print(f"Number of negative values in input: {number_of_negatives_in_input}")
+        x_fit = x
 
         nmf_kwargs = {
             "n_components": cfg.n_components,
@@ -76,19 +77,29 @@ class SklearnNMFExtractor(BaseFeatureExtractor):
             nmf_kwargs["alpha"] = cfg.alpha_w
 
         model = NMF(**nmf_kwargs)
-        coefficients = model.fit_transform(x)  # W: (n_samples, n_components)
+        coefficients_nk = model.fit_transform(x_fit)  # W: (num_samples, n_components)
         components = model.components_             # H: (n_components, d_hidden)
 
-        reconstruction = coefficients @ components
-        reconstruction_loss = float(np.linalg.norm(x - reconstruction, ord="fro") ** 2)
+        reconstruction = coefficients_nk @ components
+        reconstruction_loss = float(np.linalg.norm(x_fit - reconstruction, ord="fro") ** 2)
 
         learned_features = components.T  # (d_hidden, n_components)
+        # Return coefficients as (n_components, num_samples).
+        coefficients = coefficients_nk.T
+        validate_factorization_shapes(
+            activations=x,
+            learned_features=learned_features,
+            coefficients=coefficients,
+            n_components=cfg.n_components,
+            method_name=self.method_name,
+        )
 
         return FeatureExtractionResult(
             learned_features=learned_features.astype(np.float64, copy=False),
             coefficients=coefficients.astype(np.float64, copy=False),
             reconstruction_loss=reconstruction_loss,
             metadata={
+                "n_learned_features": int(learned_features.shape[1]),
                 "n_iter": getattr(model, "n_iter_", None),
                 "reconstruction_err": float(getattr(model, "reconstruction_err_", np.nan)),
             },

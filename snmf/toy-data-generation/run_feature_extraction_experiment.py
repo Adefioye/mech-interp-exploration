@@ -82,6 +82,8 @@ def build_parser() -> argparse.ArgumentParser:
     # torchnmf sparse NMF-specific.
     parser.add_argument("--tnmf-max-iter", type=int, default=500)
     parser.add_argument("--tnmf-beta", type=float, default=2.0)
+    parser.add_argument("--tnmf-s-w", type=float, default=None)
+    parser.add_argument("--tnmf-s-h", type=float, default=None)
     parser.add_argument("--tnmf-l1-strength", type=float, default=0.0)
     parser.add_argument("--tnmf-seed", type=int, default=42)
     parser.add_argument("--tnmf-verbose", action="store_true")
@@ -159,6 +161,8 @@ def main() -> None:
         n_components=n_components,
         max_iter=args.tnmf_max_iter,
         beta=args.tnmf_beta,
+        s_w=args.tnmf_s_w,
+        s_h=args.tnmf_s_h,
         l1_strength=args.tnmf_l1_strength,
         seed=args.tnmf_seed,
         dtype=args.dtype,
