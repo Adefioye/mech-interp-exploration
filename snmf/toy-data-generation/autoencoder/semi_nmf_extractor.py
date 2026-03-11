@@ -101,7 +101,7 @@ def init_knn(
 
 
 @dataclass(frozen=True)
-class SemiNMFExtractorConfig:
+class SemiNMFConfig:
     n_components: int
     max_iter: int = 500
     tol: float = 1e-6
@@ -118,7 +118,7 @@ class SemiNMFExtractorConfig:
 
 
 class SemiNMFExtractor(BaseFeatureExtractor):
-    def __init__(self, config: SemiNMFExtractorConfig):
+    def __init__(self, config: SemiNMFConfig):
         self.config = config
 
     @property

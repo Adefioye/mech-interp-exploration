@@ -14,7 +14,7 @@ from autoencoder.common import resolve_device, resolve_dtype, set_seed
 
 
 @dataclass(frozen=True)
-class TorchNMFExtractorConfig:
+class SparseNMFConfig:
     n_components: int
     max_iter: int = 500
     beta: float = 2.0
@@ -26,13 +26,13 @@ class TorchNMFExtractorConfig:
     verbose: bool = False
 
 
-class TorchNMFSparseExtractor(BaseFeatureExtractor):
-    def __init__(self, config: TorchNMFExtractorConfig):
+class SparseNMFExtractor(BaseFeatureExtractor):
+    def __init__(self, config: SparseNMFConfig):
         self.config = config
 
     @property
     def method_name(self) -> str:
-        return "torchnmf_sparse_nmf"
+        return "sparse_nmf"
 
     def get_config(self) -> dict[str, object]:
         return asdict(self.config)
@@ -52,7 +52,7 @@ class TorchNMFSparseExtractor(BaseFeatureExtractor):
             from torchnmf.nmf import NMF
         except ModuleNotFoundError as exc:
             raise ModuleNotFoundError(
-                "torchnmf is required for torchnmf_sparse_nmf method. "
+                "torchnmf is required for sparse_nmf method. "
                 "Install with: pip install torchnmf"
             ) from exc
 

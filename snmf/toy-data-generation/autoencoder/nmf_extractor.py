@@ -14,7 +14,7 @@ from autoencoder.io_utils import count_negative_elements
 
 
 @dataclass(frozen=True)
-class SklearnNMFExtractorConfig:
+class NMFConfig:
     n_components: int
     max_iter: int = 500
     tol: float = 1e-4
@@ -28,23 +28,23 @@ class SklearnNMFExtractorConfig:
     shift_to_nonnegative: bool = True
 
 
-class SklearnNMFExtractor(BaseFeatureExtractor):
-    def __init__(self, config: SklearnNMFExtractorConfig):
+class NMF(BaseFeatureExtractor):
+    def __init__(self, config: NMFConfig):
         self.config = config
 
     @property
     def method_name(self) -> str:
-        return "sklearn_nmf"
+        return "nmf"
 
     def get_config(self) -> dict[str, object]:
         return asdict(self.config)
 
     def fit(self, activations: np.ndarray) -> FeatureExtractionResult:
         try:
-            from sklearn.decomposition import NMF
+            from sklearn.decomposition import NMF as SklearnNMF
         except ModuleNotFoundError as exc:
             raise ModuleNotFoundError(
-                "scikit-learn is required for sklearn_nmf method. "
+                "scikit-learn is required for nmf method. "
                 "Install with: pip install scikit-learn"
             ) from exc
 
@@ -68,7 +68,7 @@ class SklearnNMFExtractor(BaseFeatureExtractor):
             "random_state": cfg.random_state,
         }
 
-        sig = inspect.signature(NMF.__init__)
+        sig = inspect.signature(SklearnNMF.__init__)
         if "alpha_W" in sig.parameters:
             nmf_kwargs["alpha_W"] = cfg.alpha_w
         if "alpha_H" in sig.parameters:
@@ -76,7 +76,7 @@ class SklearnNMFExtractor(BaseFeatureExtractor):
         if "alpha" in sig.parameters and "alpha_W" not in sig.parameters:
             nmf_kwargs["alpha"] = cfg.alpha_w
 
-        model = NMF(**nmf_kwargs)
+        model = SklearnNMF(**nmf_kwargs)
         coefficients_nk = model.fit_transform(x_fit)  # W: (num_samples, n_components)
         components = model.components_             # H: (n_components, d_hidden)
 

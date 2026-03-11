@@ -3,8 +3,8 @@
 
 Techniques supported:
 - semi_nmf
-- sklearn_nmf
-- torchnmf_sparse_nmf
+- nmf
+- sparse_nmf
 """
 
 from __future__ import annotations
@@ -21,9 +21,9 @@ from autoencoder.common import resolve_device, resolve_dtype
 from autoencoder.factory import build_extractor
 from autoencoder.io_utils import append_result, default_results_file
 from autoencoder.metrics import mean_max_cosine_similarity
-from autoencoder.semi_nmf_extractor import SemiNMFExtractorConfig
-from autoencoder.sklearn_nmf_extractor import SklearnNMFExtractorConfig
-from autoencoder.torchnmf_sparse_extractor import TorchNMFExtractorConfig
+from autoencoder.semi_nmf_extractor import SemiNMFConfig
+from autoencoder.nmf_extractor import NMFConfig
+from autoencoder.sparse_nmf_extractor import SparseNMFConfig
 from autoencoder.toy_data import ToyDataConfig, generate_toy_data
 
 
@@ -35,7 +35,7 @@ def build_parser() -> argparse.ArgumentParser:
     # Method selection.
     parser.add_argument(
         "--method",
-        choices=["semi_nmf", "sklearn_nmf", "torchnmf_sparse_nmf"],
+        choices=["semi_nmf", "nmf", "sparse_nmf"],
         default="semi_nmf",
     )
 
@@ -127,7 +127,7 @@ def main() -> None:
     dtype_t = resolve_dtype(args.dtype)
     device_t = resolve_device(args.device)
 
-    semi_cfg = SemiNMFExtractorConfig(
+    semi_cfg = SemiNMFConfig(
         n_components=n_components,
         max_iter=args.semi_max_iter,
         tol=args.semi_tol,
@@ -143,7 +143,7 @@ def main() -> None:
         device=device_t,
     )
 
-    sklearn_cfg = SklearnNMFExtractorConfig(
+    nmf_cfg = NMFConfig(
         n_components=n_components,
         max_iter=args.sk_max_iter,
         tol=args.sk_tol,
@@ -157,7 +157,7 @@ def main() -> None:
         shift_to_nonnegative=not args.sk_no_shift,
     )
 
-    torchnmf_cfg = TorchNMFExtractorConfig(
+    sparse_nmf_cfg = SparseNMFConfig(
         n_components=n_components,
         max_iter=args.tnmf_max_iter,
         beta=args.tnmf_beta,
@@ -180,8 +180,8 @@ def main() -> None:
     extractor = build_extractor(
         args.method,
         semi_cfg=semi_cfg,
-        sklearn_cfg=sklearn_cfg,
-        torchnmf_cfg=torchnmf_cfg,
+        nmf_cfg=nmf_cfg,
+        sparse_nmf_cfg=sparse_nmf_cfg,
     )
 
     fit_result = extractor.fit(dataset)
