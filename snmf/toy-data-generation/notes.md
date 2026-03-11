@@ -16,10 +16,15 @@ After a grid search over all these hyperparameters using random initializations,
 
 SVD initializations give 0.253 while Knn at current default gives 1.00. Knn perfect similarity is likely a result of overfitting.
 
-We also varied dataset sizes between 5000 - 100000 with range of similarity scores between 0.246 - 0.253. This suggest dataset size has minimal impact on similarity scores and ultimately weak improvement in the quality of learned features extracted by SNMF. I certainly would have looked into using other loss functions for reconstructions such as KL-divergence
+We also varied dataset sizes between 5000 - 100000 with range of similarity scores between 0.246 - 0.253. This suggest dataset size has minimal impact on similarity scores and ultimately weak improvement in the quality of learned features extracted by SNMF.
+
+Retried SemiNMF without sparsity loss on random initialization with ridge regularizer of 1e-4, K=2G=1024 with a similarity of 0.25. Still rather small and within range of what we've gotten so far after doing hyperparameter grid search.
+
+
 
 ## TODO:
-- [ ] After experimenting with SemiNMF. Retry with optimal parameters but now without sparsity loss.
+- [X] After experimenting with SemiNMF. Retry with optimal parameters but now without sparsity loss.
+- [ ] Maybe try different loss functions for SemiNMF besides frobenious norm for reconstructions loss.
 - [ ] Run NMF and tweak hyperparameters to see how far it similarity goes.
 - [ ] Run SparseNMF(Hoyer's method for NMF with sparsity constraint) and tweak hyperparams to see how far similarity goes.
 

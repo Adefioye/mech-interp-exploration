@@ -57,7 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     # Semi-NMF-specific.
     parser.add_argument("--semi-nmf-max-iter", type=int, default=500)
-    parser.add_argument("--semi-nmf-tol", type=float, default=1e-6)
+    parser.add_argument("--semi-nmf-tol", type=float, default=1e-4)
     parser.add_argument("--semi-nmf-patience", type=int, default=30)
     parser.add_argument("--semi-nmf-closed-form-eqn-reg", type=float, default=1e-4)
     parser.add_argument("--semi-nmf-sparsity-reg", type=float, default=0.1)
@@ -163,11 +163,9 @@ def main() -> None:
         beta=args.sparse_nmf_beta,
         s_w=args.sparse_nmf_s_w,
         s_h=args.sparse_nmf_s_h,
-        l1_strength=args.sparse_nmf_l1_strength,
         seed=args.sparse_nmf_seed,
         dtype=args.dtype,
         device=args.device,
-        shift_to_nonnegative=not args.sparse_nmf_no_shift,
         verbose=args.sparse_nmf_verbose,
     )
 
