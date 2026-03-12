@@ -16,13 +16,13 @@ from autoencoder.common import resolve_device, resolve_dtype, set_seed
 @dataclass(frozen=True)
 class SparseNMFConfig:
     n_components: int
-    max_iter: int = 500
+    max_iter: int = 200
     beta: float = 2.0
     s_w: float | None = None
     s_h: float | None = None
     seed: int = 42
     dtype: str = "float32"
-    device: str = "mps"
+    device: str = "cuda"
     verbose: bool = False
 
 

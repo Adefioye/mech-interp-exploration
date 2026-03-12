@@ -21,6 +21,5 @@ snmf-on-anthropic-toy-model/
 
 # Other useless folders
 snmf/toy-data-generation/__pycache__/
-snmf/toy-data-generation/results/
 
 
