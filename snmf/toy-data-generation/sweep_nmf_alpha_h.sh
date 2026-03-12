@@ -13,10 +13,12 @@ set -euo pipefail
 #   L1_RATIO=1.0
 #   ALPHA_W=0.0
 #   ALPHA_H_VALUES_STR="1e-4 1e-3 1e-2 1e-1 1"
+#   DEVICE=cuda
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PYTHON_BIN="${PYTHON_BIN:-python}"
 RUN_SCRIPT="${SCRIPT_DIR}/run_feature_extraction_experiment.py"
+DEVICE="${DEVICE:-cuda}"
 
 RESULTS_DIR="${SCRIPT_DIR}/results"
 mkdir -p "${RESULTS_DIR}"
@@ -34,6 +36,7 @@ RUN_IDX=0
 echo "Starting NMF alpha_H sweep: ${TOTAL_RUNS} runs"
 echo "Fixed l1_ratio: ${L1_RATIO}"
 echo "Fixed alpha_W: ${ALPHA_W}"
+echo "Device: ${DEVICE}"
 echo "alpha_H values: ${ALPHA_H_VALUES_STR}"
 echo "Results file: ${RESULTS_FILE}"
 
@@ -48,7 +51,8 @@ for ALPHA_H in "${ALPHA_H_VALUES[@]}"; do
     --nmf-alpha-w "${ALPHA_W}" \
     --nmf-alpha-h "${ALPHA_H}" \
     --results-file "${RESULTS_FILE}" \
-    "$@"
+    "$@" \
+    --device "${DEVICE}"
 done
 
 echo ""

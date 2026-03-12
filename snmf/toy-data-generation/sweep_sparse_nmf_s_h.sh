@@ -12,10 +12,12 @@ set -euo pipefail
 #   RESULTS_FILE=snmf/toy-data-generation/results/sparse_nmf_s_h_sweep.jsonl
 #   S_H_VALUES_STR="0.05 0.2 0.4 0.6 0.8 0.95"
 #   SPARSE_NMF_S_W=0.1
+#   DEVICE=cuda
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PYTHON_BIN="${PYTHON_BIN:-python}"
 RUN_SCRIPT="${SCRIPT_DIR}/run_feature_extraction_experiment.py"
+DEVICE="${DEVICE:-cuda}"
 
 RESULTS_DIR="${SCRIPT_DIR}/results"
 mkdir -p "${RESULTS_DIR}"
@@ -31,6 +33,7 @@ RUN_IDX=0
 
 echo "Starting sparse_nmf s_h sweep: ${TOTAL_RUNS} runs"
 echo "s_h values (must satisfy 0 < s_h < 1): ${S_H_VALUES_STR}"
+echo "Device: ${DEVICE}"
 if [[ -n "${SPARSE_NMF_S_W}" ]]; then
   echo "Fixed s_w: ${SPARSE_NMF_S_W}"
 fi
@@ -51,6 +54,7 @@ for S_H in "${S_H_VALUES[@]}"; do
     CMD+=(--sparse-nmf-s-w "${SPARSE_NMF_S_W}")
   fi
   CMD+=("$@")
+  CMD+=(--device "${DEVICE}")
 
   "${CMD[@]}"
 done

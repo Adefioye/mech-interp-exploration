@@ -13,10 +13,12 @@ set -euo pipefail
 # Optional environment overrides:
 #   PYTHON_BIN=python
 #   RESULTS_FILE=snmf/toy-data-generation/results/sweep.jsonl
+#   DEVICE=cuda
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PYTHON_BIN="${PYTHON_BIN:-python}"
 RUN_SCRIPT="${SCRIPT_DIR}/run_snmf_fit_experiment.py"
+DEVICE="${DEVICE:-cuda}"
 
 RESULTS_DIR="${SCRIPT_DIR}/results"
 mkdir -p "${RESULTS_DIR}"
@@ -32,6 +34,7 @@ TOTAL_RUNS=$(( ${#K_SCALES[@]} * ${#CLOSED_FORM_EQN_REGS[@]} * ${#SPARSITY_REGS[
 RUN_IDX=0
 
 echo "Starting grid sweep: ${TOTAL_RUNS} runs"
+echo "Device: ${DEVICE}"
 echo "Results file: ${RESULTS_FILE}"
 
 for K_SCALE in "${K_SCALES[@]}"; do
@@ -45,6 +48,7 @@ for K_SCALE in "${K_SCALES[@]}"; do
         --k-scale "${K_SCALE}" \
         --closed-form-eqn-reg "${CLOSED_FORM_EQN_REG}" \
         --sparsity-reg "${SPARSITY_REG}" \
+        --device "${DEVICE}" \
         --results-file "${RESULTS_FILE}"
     done
   done

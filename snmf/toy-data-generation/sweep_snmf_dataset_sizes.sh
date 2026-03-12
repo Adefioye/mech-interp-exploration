@@ -14,10 +14,12 @@ set -euo pipefail
 #   PYTHON_BIN=python
 #   RESULTS_FILE=snmf/toy-data-generation/results/dataset_size_sweep.jsonl
 #   DATASET_SIZES_STR="5000 10000 25000 50000 100000"
+#   DEVICE=cuda
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PYTHON_BIN="${PYTHON_BIN:-python}"
 RUN_SCRIPT="${SCRIPT_DIR}/run_snmf_fit_experiment.py"
+DEVICE="${DEVICE:-cuda}"
 
 RESULTS_DIR="${SCRIPT_DIR}/results"
 mkdir -p "${RESULTS_DIR}"
@@ -32,6 +34,7 @@ RUN_IDX=0
 
 echo "Starting dataset-size sweep: ${TOTAL_RUNS} runs"
 echo "Dataset sizes: ${DATASET_SIZES_STR}"
+echo "Device: ${DEVICE}"
 echo "Results file: ${RESULTS_FILE}"
 
 for NUM_SAMPLES in "${DATASET_SIZES[@]}"; do
@@ -42,7 +45,8 @@ for NUM_SAMPLES in "${DATASET_SIZES[@]}"; do
   "${PYTHON_BIN}" "${RUN_SCRIPT}" \
     --num-samples "${NUM_SAMPLES}" \
     --results-file "${RESULTS_FILE}" \
-    "$@"
+    "$@" \
+    --device "${DEVICE}"
 done
 
 echo ""
