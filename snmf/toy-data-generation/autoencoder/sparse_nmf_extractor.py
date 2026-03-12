@@ -11,6 +11,7 @@ from autoencoder.base_extractor import (
     validate_factorization_shapes,
 )
 from autoencoder.common import resolve_device, resolve_dtype, set_seed
+from autoencoder.io_utils import count_negative_elements
 
 
 @dataclass(frozen=True)
@@ -60,6 +61,16 @@ class SparseNMFExtractor(BaseFeatureExtractor):
         if x.ndim != 2:
             raise ValueError(f"Expected 2D activations, got shape {x.shape}.")
         
+        negative_count = count_negative_elements(x)
+
+        if negative_count > 0:
+            print(
+                f"[{self.method_name}] Warning: Input contains {negative_count} negative elements. "
+                "NMF requires non-negative inputs. Shifting input to be non-negative."
+            )
+            self.shift = -x.min()
+            x += self.shift
+
         x_fit = x
 
         self._validate_sparsity_target(cfg.s_w, "s_w")
@@ -67,7 +78,8 @@ class SparseNMFExtractor(BaseFeatureExtractor):
 
         device = resolve_device(cfg.device)
         dtype = resolve_dtype(cfg.dtype)
-        x_t = t.tensor(x_fit, dtype=dtype, device=device)
+        # torchnmf's sparse_fit has device compatibility issues, so we use CPU for fitting
+        x_t = t.tensor(x_fit, dtype=dtype, device=t.device("cpu"))
 
         # Per torchnmf docs for NMF: V ≈ H W^T with W:(C,R), H:(N,R).
         try:

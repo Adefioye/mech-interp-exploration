@@ -12,7 +12,7 @@ FloatArray = NDArray[np.float64]
 
 @dataclass(frozen=True)
 class ToyDataConfig:
-    num_samples: int = 100_000
+    num_samples: int = 10_000
     d_hidden: int = 256
     num_ground_truth_features: int = 512
     num_active_features: float = 5.0

@@ -44,7 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--n-components", type=int, default=None)
 
     # Toy data.
-    parser.add_argument("--num-samples", type=int, default=100_000)
+    parser.add_argument("--num-samples", type=int, default=10_000)
     parser.add_argument("--d-hidden", type=int, default=256)
     parser.add_argument("--num-ground-truth-features", type=int, default=512)
     parser.add_argument("--num-active-features", type=float, default=5.0)
