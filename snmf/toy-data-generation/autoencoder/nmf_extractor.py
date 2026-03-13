@@ -4,6 +4,7 @@ import inspect
 from dataclasses import asdict, dataclass
 
 import numpy as np
+import torch as t
 
 from autoencoder.base_extractor import (
     BaseFeatureExtractor,
@@ -16,8 +17,8 @@ from autoencoder.io_utils import count_negative_elements
 @dataclass(frozen=True)
 class NMFConfig:
     n_components: int
-    max_iter: int = 500
-    tol: float = 1e-4
+    max_iter: int = 200
+    tol: float = 1e-3
     init: str = "random"
     solver: str = "cd"
     beta_loss: str = "frobenius"
@@ -41,7 +42,7 @@ class NMF(BaseFeatureExtractor):
 
     def fit(self, activations: np.ndarray) -> FeatureExtractionResult:
         try:
-            from sklearn.decomposition import NMF as SklearnNMF
+            from sklearn.decomposition import NMF
         except ModuleNotFoundError as exc:
             raise ModuleNotFoundError(
                 "scikit-learn is required for nmf method. "
@@ -49,7 +50,10 @@ class NMF(BaseFeatureExtractor):
             ) from exc
 
         cfg = self.config
-        x = np.asarray(activations, dtype=np.float64)
+        if isinstance(activations, t.Tensor):
+            x = activations.detach().to(dtype=t.float32, device="cpu").numpy()
+        else:
+            x = np.asarray(activations, dtype=np.float32)
         negative_count = count_negative_elements(x)
 
         print(f"[{self.method_name}] Input activations shape: {x.shape}")
@@ -76,7 +80,7 @@ class NMF(BaseFeatureExtractor):
             "random_state": cfg.random_state,
         }
 
-        sig = inspect.signature(SklearnNMF.__init__)
+        sig = inspect.signature(NMF.__init__)
         if "alpha_W" in sig.parameters:
             nmf_kwargs["alpha_W"] = cfg.alpha_w
         if "alpha_H" in sig.parameters:
@@ -84,7 +88,7 @@ class NMF(BaseFeatureExtractor):
         if "alpha" in sig.parameters and "alpha_W" not in sig.parameters:
             nmf_kwargs["alpha"] = cfg.alpha_w
 
-        model = SklearnNMF(**nmf_kwargs)
+        model = NMF(**nmf_kwargs)
         coefficients_nk = model.fit_transform(x_fit)  # W: (num_samples, n_components)
         components = model.components_             # H: (n_components, d_hidden)
 

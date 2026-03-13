@@ -36,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--method",
         choices=["semi_nmf", "nmf", "sparse_nmf"],
-        default="nmf",
+        default="semi_nmf",
     )
 
     # Shared sizing.
@@ -56,7 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--device", choices=["auto", "cpu", "cuda", "mps"], default="mps")
 
     # Semi-NMF-specific.
-    parser.add_argument("--semi-nmf-max-iter", type=int, default=500)
+    parser.add_argument("--semi-nmf-max-iter", type=int, default=200)
     parser.add_argument("--semi-nmf-tol", type=float, default=1e-4)
     parser.add_argument("--semi-nmf-patience", type=int, default=30)
     parser.add_argument("--semi-nmf-closed-form-eqn-reg", type=float, default=1e-4)
@@ -68,18 +68,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--semi-nmf-knn-chunk-size", type=int, default=5_000)
 
     # sklearn NMF-specific.
-    parser.add_argument("--nmf-max-iter", type=int, default=500)
-    parser.add_argument("--nmf-tol", type=float, default=1e-4)
+    parser.add_argument("--nmf-max-iter", type=int, default=200)
+    parser.add_argument("--nmf-tol", type=float, default=1e-3)
     parser.add_argument("--nmf-init", default="random", choices=["random", "nndsvda", "nndsvdar", "nndsvd"])
     parser.add_argument("--nmf-solver", choices=["cd", "mu"], default="cd")
     parser.add_argument("--nmf-beta-loss", default="frobenius")
     parser.add_argument("--nmf-alpha-w", type=float, default=0.0)
-    parser.add_argument("--nmf-alpha-h", type=float, default=0.0)
-    parser.add_argument("--nmf-l1-ratio", type=float, default=0.0)
+    parser.add_argument("--nmf-alpha-h", type=float, default=1e-4)
+    parser.add_argument("--nmf-l1-ratio", type=float, default=1.0)
     parser.add_argument("--nmf-random-state", type=int, default=42)
 
     # torchnmf sparse NMF-specific.
-    parser.add_argument("--sparse-nmf-max-iter", type=int, default=500)
+    parser.add_argument("--sparse-nmf-max-iter", type=int, default=200)
     parser.add_argument("--sparse-nmf-beta", type=float, default=2.0)
     parser.add_argument("--sparse-nmf-s-w", type=float, default=None)
     parser.add_argument("--sparse-nmf-s-h", type=float, default=None)

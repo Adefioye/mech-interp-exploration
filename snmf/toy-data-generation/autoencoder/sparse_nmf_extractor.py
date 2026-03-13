@@ -57,7 +57,10 @@ class SparseNMFExtractor(BaseFeatureExtractor):
                 "Install with: pip install torchnmf"
             ) from exc
 
-        x = np.asarray(activations, dtype=np.float64)
+        if isinstance(activations, t.Tensor):
+            x = activations.detach().to(dtype=t.float32, device="cpu").numpy()
+        else:
+            x = np.asarray(activations, dtype=np.float32)
         if x.ndim != 2:
             raise ValueError(f"Expected 2D activations, got shape {x.shape}.")
         
@@ -72,26 +75,24 @@ class SparseNMFExtractor(BaseFeatureExtractor):
             x += self.shift
 
         x_fit = x
+        x_fit = t.tensor(x_fit, dtype=resolve_dtype(cfg.dtype))
 
         self._validate_sparsity_target(cfg.s_w, "s_w")
         self._validate_sparsity_target(cfg.s_h, "s_h")
 
-        device = resolve_device(cfg.device)
-        dtype = resolve_dtype(cfg.dtype)
         # torchnmf's sparse_fit has device compatibility issues, so we use CPU for fitting
-        x_t = t.tensor(x_fit, dtype=dtype, device=t.device("cpu"))
 
         # Per torchnmf docs for NMF: V ≈ H W^T with W:(C,R), H:(N,R).
         try:
-            model = NMF(x_t.shape, rank=cfg.n_components)
+            model = NMF(x_fit.shape, rank=cfg.n_components)
         except TypeError:
-            model = NMF(x_t.shape, cfg.n_components)
+            model = NMF(x_fit.shape, cfg.n_components)
 
         if not hasattr(model, "sparse_fit"):
             raise RuntimeError("torchnmf NMF model does not expose sparse_fit().")
 
         n_iter = model.sparse_fit(
-            x_t,
+            x_fit,
             beta=cfg.beta,
             max_iter=cfg.max_iter,
             verbose=cfg.verbose,
@@ -104,7 +105,7 @@ class SparseNMFExtractor(BaseFeatureExtractor):
 
         with t.no_grad():
             x_hat = model()
-            reconstruction_loss = t.norm(x_t - x_hat, p="fro").pow(2).item()
+            reconstruction_loss = t.norm(x_fit - x_hat, p="fro").pow(2).item()
 
         learned_features = model.W.detach().cpu().numpy().astype(np.float64, copy=False)
         # Return coefficients as (n_components, num_samples).

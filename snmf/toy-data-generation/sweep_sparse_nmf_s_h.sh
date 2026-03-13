@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export OMP_NUM_THREADS=8
+export MKL_NUM_THREADS=8
+export OPENBLAS_NUM_THREADS=8
+export VECLIB_MAXIMUM_THREADS=8
+
 # Sweep run_feature_extraction_experiment.py for sparse_nmf by varying s_h
 # over values strictly between 0 and 1.
 #

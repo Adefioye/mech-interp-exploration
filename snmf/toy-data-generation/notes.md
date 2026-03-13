@@ -20,12 +20,16 @@ We also varied dataset sizes between 5000 - 100000 with range of similarity scor
 
 Retried SemiNMF without sparsity loss on random initialization with ridge regularizer of 1e-4, K=2G=1024 with a similarity of 0.25. Still rather small and within range of what we've gotten so far after doing hyperparameter grid search.
 
+Used sklearn NMF api to fit NMF on 5000 activations and started by doing a sweep over alpha_h from 1e-4 -- 1, G=K=512, with highest MMCS at 0.195. Average training time roughly about 4mins.
 
+Subsequently, I trained NMF on 100_000 activations with alpha_h of 1e-4 with K=2G leading with similarity score of 0.196 for __5hrs__. My conclusion here is that there appears not to be a significant difference in similarity score with varying dataset size.
+
+Using sparse_nmf based on hoyer's method, similarity score of 0.2 was obtained on the toy model. This thereby shows how terrible all of these methods are at extracting features. Another disadvantage of these NMF methods besides SemiNMF is that they are computationally inefficient(i.e high time complexity). The conclusion therefore is that if we cannot get a reasonable score for a toy model with minimal data, we can be reasonably sure that they would perform poorly on real models with huge parameter size. 
 
 ## TODO:
 - [X] After experimenting with SemiNMF. Retry with optimal parameters but now without sparsity loss.
-- [ ] Maybe try different loss functions for SemiNMF besides frobenious norm for reconstructions loss.
-- [ ] Run NMF and tweak hyperparameters to see how far it similarity goes.
-- [ ] Run SparseNMF(Hoyer's method for NMF with sparsity constraint) and tweak hyperparams to see how far similarity goes.
+- [X] Maybe try different loss functions for SemiNMF besides frobenious norm for reconstruction loss.
+- [X] Run NMF and tweak hyperparameters to see how far it similarity goes.
+- [X] Run SparseNMF(Hoyer's method for NMF with sparsity constraint) and tweak hyperparams to see how far similarity goes.
 
 
