@@ -24,7 +24,7 @@ Used sklearn NMF api to fit NMF on 5000 activations and started by doing a sweep
 
 Subsequently, I trained NMF on 100_000 activations with alpha_h of 1e-4 with K=2G leading with similarity score of 0.196 for __5hrs__. My conclusion here is that there appears not to be a significant difference in similarity score with varying dataset size.
 
-Using sparse_nmf based on hoyer's method, similarity score of 0.2 was obtained on the toy model. This thereby shows how terrible all of these methods are at extracting features. Another disadvantage of these NMF methods besides SemiNMF is that they are computationally inefficient(i.e high time complexity). The conclusion therefore is that if we cannot get a reasonable score for a toy model with minimal data, we can be reasonably sure that they would perform poorly on real models with huge parameter size. 
+Using sparse_nmf based on hoyer's method, similarity score of 0.2 was obtained on the toy model. This thereby shows how terrible all of these methods are at extracting features. Another disadvantage of these NMF methods besides SemiNMF is that they are computationally inefficient(i.e high time complexity). The conclusion therefore is that if we cannot get a reasonable score for a toy model with minimal data, we can be reasonably sure that they would perform poorly on real models with huge parameter size. On this note, I believe this is why the mech interp community has perhaps rally around SAE as extracting features from LLMs.
 
 ## TODO:
 - [X] After experimenting with SemiNMF. Retry with optimal parameters but now without sparsity loss.
